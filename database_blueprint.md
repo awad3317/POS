@@ -11,8 +11,9 @@ Stores inventory items (shoes, clothing, etc.).
 * `description` (Text, Nullable) - Details
 * `image` (String, Nullable) - Product picture path
 * `barcode` (String, Unique) - For scanner integration
+* `purchase_price` (Decimal 14,2, Default: 0.00) - Cost price 
 * `regular_price` (Decimal 8,2, Nullable) - Before discount
-* `price` (Decimal 14,2) - Final selling price (Modified via update migration)
+* `price` (Decimal 14,2) - Final selling price (Must be >= purchase_price)
 * `quantity` (Integer, Default: 1) - Stock level
 * `tax` (Decimal 8,2, Default: 0.00) - VAT percentage
 * `is_custom_product` (Boolean, Default: false)
@@ -44,7 +45,7 @@ Detailed lines inside an invoice.
 * `order_id` (ForeignId) -> Links to `orders.id` (On Delete: Cascade)
 * `product_id` (ForeignId) -> Links to `products.id` (On Delete: Cascade)
 * `name` (String) - Product name at the time of purchase
-* `price` (Decimal 14,4) - Price at the time of purchase (Modified via update migration)
+* `price` (Decimal 14,4) - Price at the time of purchase (Must not be overridden below product's purchase_price)
 * `quantity` (Integer, Default: 1)
 * `tax` (Decimal 8,2, Default: 0.00)
 * `timestamps`
@@ -54,7 +55,7 @@ Financial transactions for orders.
 * `id` (BigInt, Primary Key)
 * `order_id` (ForeignId) -> Links to `orders.id` (On Delete: Cascade)
 * `user_id` (ForeignId) -> Links to `users.id` (On Delete: Cascade) - The cashier who took the payment
-* `amount` (Decimal 14,4) - Paid amount (Modified via update migration)
+* `amount` (Decimal 14,4) - Paid amount
 * `timestamps`
 
 ### 6. `cart`
@@ -64,7 +65,7 @@ Temporary storage for the POS checkout session.
 * `product_id` (ForeignId) -> Links to `products.id` (On Delete: Cascade)
 * `name` (String)
 * `quantity` (Unsigned Integer)
-* `price` (Decimal 8,2)
+* `price` (Decimal 8,2) - Selling price in cart (Validated against product's purchase_price)
 * `tax` (Decimal 8,2, Default: 0.00)
 
 ### 7. `settings`
@@ -86,3 +87,8 @@ System admin/cashier credentials.
 * `order_items` belongs to a `product` (1-to-Many Compulsory)
 * `payments` belongs to an `order` and is processed by a `user`
 * `cart` records belong to a `user` session and contain individual `products`
+
+---
+## 🛡️ Business Logic Constraints (قواعد عمل النظام)
+* **Price Protection:** `products.price` must always be greater than or equal to `products.purchase_price`.
+* **Cart/Checkout Validation:** Any operational price modification inside `cart` or `order_items` must be restricted from dropping below the original `product.purchase_price` to safeguard profit margins.
