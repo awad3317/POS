@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->string('barcode')->unique();
             $table->decimal('regular_price', 8, 2)->nullable();
+            $table->decimal('purchase_price', 14, 2)->default(0.00);
             $table->decimal('price', 8, 2);
             $table->integer('quantity')->default('1');
             $table->decimal('tax', 8, 2)->default('0.00');

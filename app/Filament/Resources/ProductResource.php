@@ -12,6 +12,7 @@ use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Forms;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -54,10 +55,22 @@ class ProductResource extends Resource
                         ->label('الباركود (Barcode)')
                         ->required()
                         ->unique(Product::class, 'barcode', ignoreRecord: true),
+                    TextInput::make('purchase_price')
+                        ->label('سعر الشراء')
+                        ->numeric()
+                        ->live(onBlur: true)
+                        ->required(),
                     TextInput::make('price')
                         ->label('سعر البيع')
                         ->numeric()
-                        ->required(),
+                        ->live(onBlur: true)
+                        ->required()
+                        ->rules([
+                            fn (Get $get): string => 'min:' . ($get('purchase_price') ?: 0),
+                        ])
+                        ->validationMessages([
+                            'min' => 'عذراً، لا يمكن أن يكون سعر البيع أقل من سعر الشراء الأساسي!',
+                        ]),
                     TextInput::make('quantity')
                         ->label('الكمية المتوفرة بالمخزن')
                         ->numeric()
