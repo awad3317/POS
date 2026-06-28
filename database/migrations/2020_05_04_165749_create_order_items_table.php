@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->decimal('price', 8, 4);
             $table->integer('quantity')->default(1);
+            $table->decimal('discount', 8, 2)->default(0.00);
             $table->foreignId('order_id');
             $table->foreignId('product_id');
             $table->string('name');

@@ -1,10 +1,20 @@
 <tr class="odd:bg-white even:bg-gray-100" dir="rtl">
+    @if($cartItem)
     <td class="px-2 py-1 border-l text-right dark:text-gray-800 min-w-[200px] max-w-[400px] whitespace-normal break-words font-medium">{{ $cartItem->name }}</td>
     <td class="px-2 py-1 border-l text-center dark:text-gray-800">{{ number_format($cartItem->price, 2) }}</td>
-    <td class="px-2 py-1 border-l text-center dark:text-gray-800">%{{ $cartItem->tax }}</td>
+    
+    <!-- 👈 حقل الخصم المباشر المربوط بـ Livewire Component -->
+    <td class="px-2 py-1 border-l text-center dark:text-gray-800">
+        <div class="w-24 mx-auto">
+            <input type="number" step="0.01" min="0" wire:model.live.debounce.500ms="discount" 
+                class="p-1 bg-white text-center block w-full text-sm text-red-600 border border-red-300 font-semibold rounded-md focus:ring-red-500 focus:border-red-500 dark:border-gray-600" 
+                placeholder="0.00" />
+        </div>
+    </td>
+
     <td class="px-2 py-1 border-l text-center dark:text-gray-800">
         <div class="flex items-center gap-1 dark:text-gray-800 w-32 mx-auto">
-            <input type="number" min="1" wire:model.live.debounce.250ms="quantity" class="p-1 bg-white text-center block w-full text-sm text-gray-900 border border-gray-300 rounded-md bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-800 dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+            <input type="number" min="1" wire:model.live.debounce.250ms="quantity" class="p-1 bg-white text-center block w-full text-sm text-gray-900 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600" />
             
             <button wire:click="removeFromCart" wire:loading.attr="disabled" class="p-2 text-white bg-red-500 rounded hover:bg-red-600 transition-colors" title="حذف المنتج">
                 <svg wire:loading.remove wire:target='removeFromCart' xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -14,10 +24,11 @@
             </button>
         </div>
     </td>
+
     @php
-        $item_total = $cartItem->price * $cartItem->quantity;
-        $tax_amount = ($item_total * $cartItem->tax) / 100;
-        $item_total_with_tax = $item_total + $tax_amount;
+        $current_discount = $cartItem->discount ?? 0;
+        $item_total_with_discount = ($cartItem->price - $current_discount) * $cartItem->quantity;
     @endphp
-    <td class="px-2 py-1 text-center font-semibold text-gray-900">{{ number_format($item_total_with_tax , 2, '.', '') }}</td>
+    <td class="px-2 py-1 text-center font-semibold text-gray-900">{{ number_format($item_total_with_discount, 2, '.', '') }}</td>
+    @endif
 </tr>

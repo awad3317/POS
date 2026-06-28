@@ -89,14 +89,16 @@ class Cart extends Component
         foreach ($items as $item) {  
             $product = Product::find( $item->product_id );
 
+            $discount = $item->discount ?? 0;
             $order->items()->create([
                 'name' => $item->name,
                 'price' => $item->price,
                 'tax' => $item->tax,
+                'discount' => $discount,
                 'quantity' => $item->quantity,
                 'product_id' => $item->product_id,
             ]);
-            $total_price += $item->quantity * $item->price;
+            $total_price += ($item->price - $discount) * $item->quantity;
             $product->quantity = $product->quantity - $item->quantity;
             $product->save();
         }

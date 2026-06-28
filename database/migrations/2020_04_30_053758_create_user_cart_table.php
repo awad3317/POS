@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('name');
             $table->unsignedInteger('quantity');
             $table->decimal('price', 8, 2);
+            $table->decimal('discount', 8, 2)->default(0.00);
             $table->decimal('tax', 8, 2)->default('0.00');
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
