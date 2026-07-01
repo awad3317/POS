@@ -104,11 +104,11 @@ class ProductResource extends Resource
                     ->wrap()
                     ->sortable()
                     ->searchable(),
-                ImageColumn::make('image')
-                    ->label('الصورة')
-                    ->disk('public_uploads')  
-                    ->size(50)  
-                    ->square(),
+                // ImageColumn::make('image')
+                //     ->label('الصورة')
+                //     ->disk('public_uploads')  
+                //     ->size(50)  
+                //     ->square(),
                 TextColumn::make('barcode')
                     ->label('الباركود')
                     ->searchable(),
