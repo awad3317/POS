@@ -90,6 +90,9 @@
             border-bottom: 1px dashed #000;
             padding: 5px 2px;
         }
+        .discount-text {
+            color: #c00;
+        }
         .invoice-footer {
             text-align: center;
             font-size: 12px;
@@ -122,9 +125,10 @@
     <table class="main-table">
         <thead>
             <tr>
-                <th class="text-right" style="width: 45%;">المنتج</th>
+                <th class="text-right" style="width: 35%;">المنتج</th>
                 <th class="text-center" style="width: 15%;">السعر</th>
-                <th class="text-center" style="width: 15%;">الكمية</th>
+                <th class="text-center" style="width: 15%;">الخصم</th>
+                <th class="text-center" style="width: 10%;">الكمية</th>
                 <th class="text-left" style="width: 25%;">الإجمالي</th>
             </tr>
         </thead>
@@ -132,33 +136,31 @@
             @php 
                 $i = 0; 
                 $total_price = 0;
-                $total_tax = [];
+                $total_discount = 0;
                 $grand_total = 0;
             @endphp
             @foreach($items as $item)
                 @php 
                     $i++; 
-                    $tax = $item['tax'];
+                    $discount = $item->discount ?? 0;
                     $item_total = $item->price * $item->quantity;
-                    $tax_amount = ($item_total * $tax) / 100;
-                    $item_total_with_tax = $item_total + $tax_amount;
+                    $discount_amount = $discount * $item->quantity;
+                    $item_total_after_discount = ($item->price - $discount) * $item->quantity;
                     $total_price += $item_total;
-                    $total_tax[$tax] = ($total_tax[$tax] ?? 0) + $tax_amount;
-                    $grand_total += $item_total_with_tax;
+                    $total_discount += $discount_amount;
+                    $grand_total += $item_total_after_discount;
                 @endphp
                 <tr>
                     <td class="text-right">
                         <div>{{ $item->product->name }}</div>
-                        @if((int)$tax > 0)
-                            <small style="color: #444; font-size: 10px;">(ض.ق.م {{(int)$tax}}%)</small>
-                        @endif
                     </td>
                     <td class="text-center">{{ number_format($item['price'], 2) }}</td>
+                    <td class="text-center discount-text">{{ $discount > 0 ? number_format($discount, 2) : '-' }}</td>
                     <td class="text-center">{{ $item['quantity'] }}</td>
-                    <td class="text-left">{{ number_format($item_total_with_tax, 2) }}</td>
+                    <td class="text-left">{{ number_format($item_total_after_discount, 2) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="4" class="border-b-dashed" style="padding: 0; height: 0;"></td>
+                    <td colspan="5" class="border-b-dashed" style="padding: 0; height: 0;"></td>
                 </tr>
             @endforeach
         </tbody>
@@ -170,12 +172,12 @@
             <td class="text-left">{{ number_format($total_price, 2) }}</td>
         </tr>
 
-        @foreach ($total_tax as $rate => $amount)
+        @if ($total_discount > 0)
             <tr>
-                <td class="text-right">مجموع الضريبة ({{ (int)$rate }}%):</td>
-                <td class="text-left">{{ number_format($amount, 2) }}</td>
+                <td class="text-right discount-text">إجمالي الخصومات:</td>
+                <td class="text-left discount-text">- {{ number_format($total_discount, 2) }}</td>
             </tr>
-        @endforeach
+        @endif
 
         <tr class="grand-total-row">
             <td class="text-right">المجموع الكلي:</td>
