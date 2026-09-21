@@ -29,19 +29,11 @@ class BarcodeGenerator extends Page
             Select::make('product_id')
                 ->label('ابحث عن المنتج واختاره هنا:')
                 ->placeholder('اكتب اسم المنتج أو الباركود للبحث السريع...')
+                // جلب الـ id والاسم فقط بدلاً من تحميل كامل السجلات في الذاكرة
+                ->options(Product::query()->pluck('name', 'id'))
                 ->searchable()
-                // تحسين الأداء: جلب أول 50 منتج فقط، والبحث المباشر عند الكتابة
-                ->getSearchResultsUsing(fn (string $search): array => 
-                    Product::query()
-                        ->where('name', 'like', "%{$search}%")
-                        ->orWhere('barcode', 'like', "%{$search}%")
-                        ->limit(50)
-                        ->pluck('name', 'id')
-                        ->toArray()
-                )
-                ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name)
+                ->preload()
                 ->live(),
-
             TextInput::make('print_qty')
                 ->label('عدد الكروت المطلوب طباعتها:')
                 ->numeric()
