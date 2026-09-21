@@ -1,4 +1,9 @@
 <x-filament-panels::page>
+    {{-- تحميل الخط مرة واحدة فقط لكامل الصفحة --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&display=swap" rel="stylesheet">
+
     <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); direction: rtl;">
         
         <div style="margin-bottom: 24px;">
@@ -11,12 +16,16 @@
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f3f4f6; padding: 32px; border-radius: 8px; border: 2px dashed #d1d5db;">
                 
                 <div id="print-area" class="barcode-grid">
-                    @for ($i = 0; $i < max(1, intval($print_qty)); $i++)
+                    @php 
+                        $qty = min(max(1, (int) $print_qty), 500); 
+                    @endphp
+
+                    @for ($i = 0; $i < $qty; $i++)
                         <div class="barcode-ticket">
-                            <div class="p-name">{{ $product_name }}</div>
+                            <div class="p-name" title="{{ $product_name }}">{{ $product_name }}</div>
                             
-                            <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
-                            <div class="b-lines">*{{ $product_barcode }}*</div>
+                            {{-- كود 128 بدون نجوم، مع هوامش مناسبة للقارئ --}}
+                            <div class="b-lines">{{ $product_barcode }}</div>
                             
                             <div class="b-text">{{ $product_barcode }}</div>
                             <div class="p-price">السعر: {{ $product_price }}</div>
@@ -32,30 +41,67 @@
     </div>
 
     <style>
-        /* التنسيق القياسي على الشاشة */
         .barcode-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
             gap: 15px;
             width: 100%;
             justify-content: center;
         }
+
         .barcode-ticket {
             background: white; 
-            padding: 10px; 
-            border-radius: 4px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            padding: 12px 8px; 
+            border-radius: 6px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
             text-align: center; 
             border: 1px solid #e5e7eb;
             box-sizing: border-box;
-            page-break-inside: avoid; /* يمنع انقسام الكرت الواحد بين الصفحات */
+            page-break-inside: avoid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .p-name { font-size: 13px; font-weight: bold; color: #111827; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .b-lines { font-family: 'Libre Barcode 39', cursive; font-size: 32px; margin: 0; padding: 0; line-height: 1; color: black; white-space: nowrap; overflow: hidden; }
-        .b-text { font-size: 11px; font-weight: bold; color: #4b5563; margin-top: 2px; }
-        .p-price { font-size: 13px; font-weight: bold; color: #059669; margin-top: 2px; }
 
-        /* التحكم الكامل بورقة الطباعة وإخفاء بقية عناصر النظام */
+        .p-name { 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: #111827; 
+            margin-bottom: 4px; 
+            max-width: 100%;
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+
+        /* تنسيق باركود 128 مع المحافظة على مساحة بيضاء على الأطراف لضمان قراءة الماسح */
+        .b-lines { 
+            font-family: 'Libre Barcode 128', cursive; 
+            font-size: 42px; 
+            margin: 0; 
+            padding: 2px 10px; 
+            line-height: 1; 
+            color: black; 
+            white-space: nowrap; 
+            display: block;
+            letter-spacing: 0;
+        }
+
+        .b-text { 
+            font-size: 11px; 
+            font-weight: 600; 
+            letter-spacing: 1px;
+            color: #4b5563; 
+            margin-top: 2px; 
+        }
+
+        .p-price { 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: #059669; 
+            margin-top: 4px; 
+        }
+
         @media print {
             body * {
                 visibility: hidden;
@@ -69,14 +115,13 @@
                 top: 0;
                 width: 100% !important;
                 display: grid !important;
-                /* يطبع الكروت كصفوف وأعمدة متناسقة بداخل الورقة */
                 grid-template-columns: repeat(3, 1fr) !important; 
                 gap: 10px !important;
                 padding: 10px !important;
                 margin: 0 !important;
             }
             .barcode-ticket {
-                border: 1px dashed #ccc !important; /* وضع حدود منقطة خفيفة لتسهيل القص المقص */
+                border: 1px dashed #bbb !important;
                 box-shadow: none !important;
             }
             @page {

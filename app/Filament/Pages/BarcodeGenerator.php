@@ -17,17 +17,11 @@ class BarcodeGenerator extends Page
 
     protected string $view = 'filament.pages.barcode-generator';
 
-    public $product_id;
-    public $print_qty = 1; // القيمة الافتراضية كرت واحد
-    public $product_name;
-    public $product_barcode;
-    public $product_price;
-
-    public function mount()
-    {
-        $this->product_id = null;
-        $this->print_qty = 1;
-    }
+    public $product_id = null;
+    public $print_qty = 1;
+    public $product_name = null;
+    public $product_barcode = null;
+    public $product_price = null;
 
     public static function form(Schema $schema): Schema
     {
@@ -35,35 +29,44 @@ class BarcodeGenerator extends Page
             Select::make('product_id')
                 ->label('ابحث عن المنتج واختاره هنا:')
                 ->placeholder('اكتب اسم المنتج أو الباركود للبحث السريع...')
-                ->options(Product::all()->pluck('name', 'id'))
                 ->searchable()
-                ->preload()
+                // تحسين الأداء: جلب أول 50 منتج فقط، والبحث المباشر عند الكتابة
+                ->getSearchResultsUsing(fn (string $search): array => 
+                    Product::query()
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%")
+                        ->limit(50)
+                        ->pluck('name', 'id')
+                        ->toArray()
+                )
+                ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name)
                 ->live(),
 
             TextInput::make('print_qty')
                 ->label('عدد الكروت المطلوب طباعتها:')
                 ->numeric()
                 ->minValue(1)
+                ->maxValue(500)
                 ->default(1)
                 ->required()
-                ->live() // تحديث التكرار فوراً في المعاينة
+                ->live(debounce: 300) // تأخير بسيط لتجنب كثرة إعادة الرسم أثناء الكتابة السريعة
         ]);
     }
 
-    public function updatedProductId($value)
+    public function updatedProductId($value): void
     {
         if ($value) {
-            $product = Product::find($value);
+            // جلب الأعمدة المطلوبة فقط من قاعدة البيانات
+            $product = Product::select(['id', 'name', 'barcode', 'price'])->find($value);
+            
             if ($product) {
                 $this->product_name = $product->name;
                 $this->product_barcode = $product->barcode;
-                $this->product_price = number_format($product->price, 2);
+                $this->product_price = number_format((float) $product->price, 2);
                 return;
             }
         }
         
-        $this->product_name = null;
-        $this->product_barcode = null;
-        $this->product_price = null;
+        $this->reset(['product_name', 'product_barcode', 'product_price']);
     }
 }
