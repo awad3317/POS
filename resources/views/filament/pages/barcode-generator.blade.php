@@ -25,7 +25,13 @@
                             <div class="p-name" title="{{ $product_name }}">{{ $product_name }}</div>
                             
                             {{-- كود 128 بدون نجوم، مع هوامش مناسبة للقارئ --}}
-                            <div class="b-lines">{{ $product_barcode }}</div>
+                            @php
+                                $generator = new \Picqer\Barcode\BarcodeGeneratorSVG();
+                            @endphp
+
+                            <div style="margin: 4px 0; display: flex; justify-content: center;">
+                                {!! $generator->getBarcode($product_barcode, $generator::TYPE_CODE_128, 1.5, 45) !!}
+                            </div>
                             
                             <div class="b-text">{{ $product_barcode }}</div>
                             <div class="p-price">السعر: {{ $product_price }}</div>
