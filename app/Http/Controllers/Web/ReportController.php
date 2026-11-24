@@ -9,13 +9,16 @@ use App\Models\EmployeeTransaction;
 use App\Models\Expense;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\Supplier;
+use App\Models\User;
 use App\Support\MoneyMath;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Spatie\Activitylog\Models\Activity;
 
 class ReportController extends Controller
 {
@@ -81,6 +84,96 @@ class ReportController extends Controller
             'lowStockProducts',
             'negativeAlerts',
             'slowMovingProducts'
+        ));
+    }
+
+    public function ownerDashboard(Request $request): View
+    {
+        $store = $request->user()->store;
+        $metrics = $this->calculateFinancialMetrics($store->id);
+
+        $todayOrdersQuery = Order::forStore($store->id)
+            ->where('type', 'sale')
+            ->whereDate('sold_at', today());
+
+        $todayOrdersCount = (clone $todayOrdersQuery)->count();
+        $todaySaleOrderIds = (clone $todayOrdersQuery)->pluck('id');
+        $todaySales = MoneyMath::sum((clone $todayOrdersQuery)->pluck('total_amount')->all());
+        $todayCreditSales = MoneyMath::sum((clone $todayOrdersQuery)->pluck('credit_amount')->all());
+
+        $todayCashSales = $todaySaleOrderIds->isEmpty()
+            ? '0.0000'
+            : MoneyMath::sum(
+                Payment::forStore($store->id)
+                    ->where('payment_type', 'order_payment')
+                    ->whereIn('order_id', $todaySaleOrderIds)
+                    ->where('method', 'cash')
+                    ->pluck('amount')
+                    ->all()
+            );
+
+        $todayWalletSales = $todaySaleOrderIds->isEmpty()
+            ? '0.0000'
+            : MoneyMath::sum(
+                Payment::forStore($store->id)
+                    ->where('payment_type', 'order_payment')
+                    ->whereIn('order_id', $todaySaleOrderIds)
+                    ->where('method', '!=', 'cash')
+                    ->pluck('amount')
+                    ->all()
+            );
+
+        $openShifts = Shift::forStore($store->id)
+            ->where('status', 'open')
+            ->with(['terminal', 'user'])
+            ->orderByDesc('opened_at')
+            ->get();
+
+        $monthEmployeeAdvances = MoneyMath::sum(
+            EmployeeTransaction::forStore($store->id)
+                ->where('type', 'advance')
+                ->where('transaction_date', '>=', now()->startOfMonth())
+                ->pluck('amount')
+                ->all()
+        );
+
+        $lowStockProducts = Product::forStore($store->id)
+            ->where('is_active', true)
+            ->whereColumn('quantity', '<=', 'min_stock_alert')
+            ->orderBy('quantity')
+            ->limit(15)
+            ->get();
+
+        $negativeAlerts = StockMovement::forStore($store->id)
+            ->where('is_negative_alert', true)
+            ->with(['product', 'user'])
+            ->latest('id')
+            ->limit(15)
+            ->get();
+
+        $storeUserIds = User::forStore($store->id)->withTrashed()->pluck('id');
+        $auditAlerts = Activity::query()
+            ->whereIn('event', ['discount_override', 'cart_item_removed'])
+            ->where('causer_type', User::class)
+            ->whereIn('causer_id', $storeUserIds)
+            ->with('causer')
+            ->latest('id')
+            ->limit(20)
+            ->get();
+
+        return view('admin.owner.index', compact(
+            'store',
+            'metrics',
+            'todaySales',
+            'todayOrdersCount',
+            'todayCashSales',
+            'todayWalletSales',
+            'todayCreditSales',
+            'openShifts',
+            'monthEmployeeAdvances',
+            'lowStockProducts',
+            'negativeAlerts',
+            'auditAlerts'
         ));
     }
 

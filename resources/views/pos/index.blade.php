@@ -4,8 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#059669">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192.png">
     <title>شاشة الكاشير — {{ $store->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/pos.js'])
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () {});
+            });
+        }
+    </script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 font-sans antialiased select-none"
       x-data="posApp(@js($bootConfig))"
@@ -170,6 +180,22 @@
                 <button type="button" @click="openBackupModal()"
                         class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold">
                     🔐 نسخة طوارئ
+                </button>
+
+                <button type="button" @click="reprintLastReceipt()" x-show="lastReceiptSnapshot" style="display:none;"
+                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold">
+                    🖨️ إعادة طباعة
+                </button>
+
+                <button type="button" @click="openLastSaleWhatsApp()" x-show="lastSaleSnapshot" style="display:none;"
+                        class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 border border-emerald-600 font-semibold">
+                    📱 واتساب
+                </button>
+
+                <button type="button" @click="openCashDrawerHardware()"
+                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold"
+                        title="فتح درج النقدية عبر WebUSB أو عرض دليل الطباعة الصامتة">
+                    💵 درج USB
                 </button>
 
                 <button type="button" @click="openOrTogglePinLock()"

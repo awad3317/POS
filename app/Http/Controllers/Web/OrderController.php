@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Shift;
 use App\Services\ReturnService;
+use App\Support\WhatsAppLink;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,8 +39,9 @@ class OrderController extends Controller
         $store = $request->user()->store;
         $order->load(['customer', 'user', 'terminal', 'items', 'payments', 'returns.items']);
         $openShifts = Shift::forStore($store->id)->where('status', 'open')->with('terminal')->get();
+        $whatsappUrl = WhatsAppLink::forOrder($order, $store);
 
-        return view('admin.orders.show', compact('store', 'order', 'openShifts'));
+        return view('admin.orders.show', compact('store', 'order', 'openShifts', 'whatsappUrl'));
     }
 
     public function recordReturn(Request $request, Order $order): RedirectResponse

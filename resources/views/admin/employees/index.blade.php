@@ -43,6 +43,8 @@
                         <button type="button" @click="txEmp = { id: {{ $emp->id }}, name: '{{ addslashes($emp->name) }}' }"
                                 class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-semibold">سلفة / حركة</button>
                         <a href="{{ route('employees.statement', $emp->id) }}" class="underline text-slate-700">كشف حساب</a>
+                        <a href="{{ \App\Support\WhatsAppLink::forEmployeeStatement($emp, $store) }}" target="_blank" rel="noopener noreferrer"
+                           class="px-2 py-1 rounded-lg bg-emerald-600 text-white font-semibold">واتساب</a>
                     </td>
                 </tr>
                 @empty

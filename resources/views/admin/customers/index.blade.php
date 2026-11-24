@@ -41,6 +41,8 @@
                         <button type="button" @click="settleCust = { id: {{ $c->id }}, name: '{{ addslashes($c->name) }}' }"
                                 class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-semibold">سند قبض</button>
                         <a href="{{ route('customers.statement', $c->id) }}" class="underline text-slate-700">كشف حساب</a>
+                        <a href="{{ \App\Support\WhatsAppLink::forCustomerDebt($c, $store) }}" target="_blank" rel="noopener noreferrer"
+                           class="px-2 py-1 rounded-lg bg-emerald-600 text-white font-semibold">واتساب</a>
                     </td>
                 </tr>
                 @empty

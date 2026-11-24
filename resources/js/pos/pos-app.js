@@ -21,6 +21,8 @@ import {
     calculatePaymentBalance,
 } from './pos-cart-math.js';
 import { PosSyncEngine } from './pos-sync.js';
+import { buildPosOrderWhatsAppUrl } from './pos-whatsapp.js';
+import { kickCashDrawerViaWebUsb } from './pos-print.js';
 
 const PAYMENT_METHOD_LABELS = {
     cash: 'نقدي',
@@ -161,6 +163,10 @@ export function createPosApp(bootConfig = {}) {
         backupPassphrase: '',
         backupStatusMsg: '',
         pendingOutboxItems: [],
+
+        // Last receipt snapshot (for Phase 5 reprint & WhatsApp 1-click)
+        lastReceiptSnapshot: null,
+        lastSaleSnapshot: null,
 
         // Toast notifications
         toast: { show: false, type: 'success', message: '' },
@@ -1754,7 +1760,33 @@ export function createPosApp(bootConfig = {}) {
         },
 
         dispatchPrintReceipt(detail) {
+            this.lastReceiptSnapshot = detail;
+            if (detail?.type === 'sale') {
+                this.lastSaleSnapshot = detail;
+            }
             window.dispatchEvent(new CustomEvent('pos:print-receipt', { detail }));
+        },
+
+        reprintLastReceipt() {
+            if (!this.lastReceiptSnapshot) {
+                this.showToast('warning', 'لا يوجد إيصال سابق لإعادة طباعته.');
+                return;
+            }
+            window.dispatchEvent(new CustomEvent('pos:print-receipt', { detail: this.lastReceiptSnapshot }));
+        },
+
+        openLastSaleWhatsApp() {
+            if (!this.lastSaleSnapshot) {
+                this.showToast('warning', 'لا توجد فاتورة مكتملة لإرسالها عبر واتساب.');
+                return;
+            }
+            const url = buildPosOrderWhatsAppUrl(this.lastSaleSnapshot);
+            window.open(url, '_blank', 'noopener,noreferrer');
+        },
+
+        async openCashDrawerHardware() {
+            const res = await kickCashDrawerViaWebUsb();
+            this.showToast(res.ok ? 'success' : 'warning', res.message);
         },
 
         closeModal() {

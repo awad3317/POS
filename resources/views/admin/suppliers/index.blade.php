@@ -37,6 +37,8 @@
                         <button type="button" @click="paySupplier = { id: {{ $s->id }}, name: '{{ addslashes($s->name) }}' }"
                                 class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-semibold">سند صرف</button>
                         <a href="{{ route('suppliers.statement', $s->id) }}" class="text-slate-700 underline">كشف حساب</a>
+                        <a href="{{ \App\Support\WhatsAppLink::forSupplierPayment($s, $store) }}" target="_blank" rel="noopener noreferrer"
+                           class="px-2 py-1 rounded-lg bg-emerald-600 text-white font-semibold">واتساب</a>
                     </td>
                 </tr>
                 @empty

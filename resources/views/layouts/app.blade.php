@@ -4,8 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#059669">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192.png">
     <title>@yield('title', 'لوحة الإدارة') — {{ auth()->user()?->store?->name ?? 'Yemen POS' }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @hasSection('vite_entry')
+        @yield('vite_entry')
+    @else
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased" x-data="{ sidebarOpen: false }">
 @php
@@ -46,6 +53,9 @@
             <a href="{{ route('products.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg {{ request()->routeIs('products.*') ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-300 hover:bg-slate-800' }}">
                 <span>📦</span><span>المنتجات والباركود</span>
             </a>
+            <a href="{{ route('barcodes.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg {{ request()->routeIs('barcodes.*') ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-300 hover:bg-slate-800' }}">
+                <span>🏷️</span><span>طباعة ملصقات الباركود</span>
+            </a>
             <a href="{{ route('stocktake.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg {{ request()->routeIs('stocktake.*') ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-300 hover:bg-slate-800' }}">
                 <span>📋</span><span>الجرد وكرت الصنف</span>
             </a>
@@ -83,6 +93,9 @@
             </a>
 
             @can('reports.view_profit')
+            <a href="{{ route('owner.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg {{ request()->routeIs('owner.dashboard') ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-300 hover:bg-slate-800' }}">
+                <span>📱</span><span>لوحة المالك السريعة</span>
+            </a>
             <a href="{{ route('reports.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg {{ request()->routeIs('reports.*') ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-300 hover:bg-slate-800' }}">
                 <span>📈</span><span>التقارير وصافي الربح</span>
             </a>

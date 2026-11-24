@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\BarcodeController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\ExpenseController;
@@ -49,6 +50,10 @@ Route::middleware(['auth', 'store.context'])->group(function (): void {
             Route::get('/stocktake', [StocktakeController::class, 'index'])->name('stocktake.index');
             Route::post('/stocktake', [StocktakeController::class, 'store'])->name('stocktake.store');
             Route::get('/products/{product}/stock-card', [StocktakeController::class, 'stockCard'])->name('products.stock-card');
+
+            // Thermal & A4 Barcode Stickers
+            Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcodes.index');
+            Route::get('/barcodes/search', [BarcodeController::class, 'search'])->name('barcodes.search');
         });
 
         // Suppliers & Purchases
@@ -98,8 +103,9 @@ Route::middleware(['auth', 'store.context'])->group(function (): void {
         Route::get('/expenses', [ExpenseController::class, 'index'])->name('expenses.index');
         Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
 
-        // Financial Profit Reports
+        // Financial Profit Reports & Mobile Owner Dashboard
         Route::get('/reports', [ReportController::class, 'index'])->middleware('permission:reports.view_profit')->name('reports.index');
+        Route::get('/owner', [ReportController::class, 'ownerDashboard'])->middleware('permission:reports.view_profit')->name('owner.dashboard');
 
         // Store Settings, Exchange Rate, Users & Terminals
         Route::middleware('permission:settings.manage')->group(function (): void {

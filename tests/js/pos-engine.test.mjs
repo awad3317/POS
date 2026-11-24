@@ -19,6 +19,15 @@ import {
     decryptEmergencyBackup,
     hashLocalPin,
 } from '../../resources/js/pos/pos-crypto.js';
+import {
+    buildSaleReceiptHtml,
+    buildZReportHtml,
+    buildDrawerVoucherHtml,
+} from '../../resources/js/pos/pos-print.js';
+import {
+    formatYemeniWhatsAppPhone,
+    buildPosOrderWhatsAppUrl,
+} from '../../resources/js/pos/pos-whatsapp.js';
 
 const sampleCatalog = {
     products: [
@@ -292,3 +301,107 @@ test('Web Crypto AES-256-GCM emergency backup encrypts and decrypts outbox/meta 
     const pinHash = await hashLocalPin('1234', 'T01');
     assert.equal(pinHash.length, 64);
 });
+
+test('Offline thermal printer builds RTL 80mm/58mm receipts with local Arabic fonts, SVG QR code, Z-report, and XSS escaping', async () => {
+    const saleHtml = await buildSaleReceiptHtml({
+        type: 'sale',
+        store: {
+            name: 'بقالة الخير <script>alert(1)</script>',
+            phone: '777100200',
+            currency_symbol: 'ر.ي',
+            decimal_places: 0,
+            receipt_settings: { paper_width: '80mm', show_qr: true, footer_note: 'شكراً لكم' },
+        },
+        cashier: { name: 'أكرم الكاشير' },
+        invoice_number: 'INV-T01-2026-000055',
+        sold_at: '2026-11-24T12:30:00Z',
+        customer_name: 'عبدالرحمن الجرادي',
+        subtotal: '1750.0000',
+        item_discount_total: '0.0000',
+        order_discount_amount: '0.0000',
+        tax_total: '0.0000',
+        total_amount: '1750.0000',
+        paid_amount: '1750.0000',
+        credit_amount: '0.0000',
+        change_amount: '250.0000',
+        items: [
+            {
+                product_name: 'عصير راني خوخ',
+                unit_name_snapshot: 'باكت 6 حبات',
+                quantity: '1.000',
+                unit_price: '1750.0000',
+                discount_amount: '0.0000',
+                net_total: '1750.0000',
+            },
+        ],
+        payments: [{ method: 'cash', amount: '2000.0000' }],
+    });
+
+    assert.equal(saleHtml.includes('dir="rtl"'), true);
+    assert.equal(saleHtml.includes('width: 80mm'), true);
+    assert.equal(saleHtml.includes('/fonts/ibm-plex-sans-arabic-400.woff2'), true);
+    assert.equal(saleHtml.includes('<svg'), true);
+    assert.equal(saleHtml.includes('INV-T01-2026-000055'), true);
+    assert.equal(saleHtml.includes('<script>alert(1)</script>'), false);
+    assert.equal(saleHtml.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), true);
+
+    const zHtml = buildZReportHtml({
+        type: 'shift_close',
+        store: { name: 'بقالة الخير', currency_symbol: 'ر.ي', decimal_places: 0, receipt_settings: { paper_width: '58mm' } },
+        cashier: { name: 'أكرم الكاشير' },
+        shift: {
+            terminal_code: 'T01',
+            opened_at: '2026-11-24T08:00:00Z',
+            closed_at: '2026-11-24T16:00:00Z',
+            opening_cash: '50000.0000',
+            cash_sales_total: '10000.0000',
+            cash_in_total: '0.0000',
+            cash_out_total: '2000.0000',
+            expected_cash: '58000.0000',
+            actual_cash: '58000.0000',
+            difference: '0.0000',
+        },
+        printed_at: '2026-11-24T16:00:00Z',
+    });
+
+    assert.equal(zHtml.includes('width: 58mm'), true);
+    assert.equal(zHtml.includes('Z-Report'), true);
+    assert.equal(zHtml.includes('58,000'), true);
+
+    const voucherHtml = buildDrawerVoucherHtml({
+        type: 'drawer_voucher',
+        voucher_type: 'employee_advance',
+        store: { name: 'بقالة الخير', currency_symbol: 'ر.ي', decimal_places: 0 },
+        cashier: { name: 'أكرم' },
+        payee_name: 'مبارك',
+        amount: '3000.0000',
+        payment_source: 'cash_drawer',
+        created_at: '2026-11-24T13:00:00Z',
+    });
+    assert.equal(voucherHtml.includes('سلفة عامل'), true);
+    assert.equal(voucherHtml.includes('3,000'), true);
+});
+
+test('WhatsApp 1-click JS helper formats Yemeni numbers and encodes Arabic POS invoices cleanly', () => {
+    assert.equal(formatYemeniWhatsAppPhone('771223344'), '967771223344');
+    assert.equal(formatYemeniWhatsAppPhone('0771223344'), '967771223344');
+    assert.equal(formatYemeniWhatsAppPhone('00967 771 223 344'), '967771223344');
+
+    const url = buildPosOrderWhatsAppUrl({
+        store: { name: 'بقالة الخير', currency_symbol: 'ر.ي', decimal_places: 0 },
+        invoice_number: 'INV-T01-2026-000010',
+        customer_name: 'أحمد',
+        customer_phone: '0771223344',
+        total_amount: '5000.0000',
+        paid_amount: '3000.0000',
+        credit_amount: '2000.0000',
+        items: [{ product_name: 'جبن بلدي', quantity: '1.000', net_total: '5000.0000' }],
+    });
+
+    assert.equal(url.startsWith('https://wa.me/967771223344?text='), true);
+    const decoded = decodeURIComponent(url.split('?text=')[1]);
+    assert.equal(decoded.includes('INV-T01-2026-000010'), true);
+    assert.equal(decoded.includes('5,000 ر.ي'), true);
+    assert.equal(decoded.includes('2,000 ر.ي'), true);
+});
+

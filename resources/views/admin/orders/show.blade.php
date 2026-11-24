@@ -38,9 +38,15 @@
             </tbody>
         </table>
 
-        <div class="border-t pt-3 flex justify-between text-sm font-bold">
-            <span>صافي الفاتورة النهائي:</span>
-            <span class="text-emerald-700">{{ number_format((float) $order->total_amount, $store->decimal_places) }} {{ $sym }}</span>
+        <div class="border-t pt-3 flex flex-wrap items-center justify-between gap-2 text-sm font-bold">
+            <div>
+                <span>صافي الفاتورة النهائي:</span>
+                <span class="text-emerald-700 mr-2">{{ number_format((float) $order->total_amount, $store->decimal_places) }} {{ $sym }}</span>
+            </div>
+            <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+                <span>📱 إرسال الفاتورة عبر واتساب</span>
+            </a>
         </div>
     </div>
 

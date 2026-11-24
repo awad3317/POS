@@ -50,6 +50,13 @@
             <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-bold">حفظ الإعدادات</button>
         </form>
 
+        <!-- Silent Thermal Printing Guide -->
+        <div class="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700 space-y-1">
+            <div class="font-bold text-slate-900">🖨️ دليل الطباعة الحرارية الصامتة (--kiosk-printing)</div>
+            <div>لتخطي نافذة معاينة الطباعة في Chrome أو Edge وإخراج الفاتورة تلقائياً على الطابعة الافتراضية، أضف العلم التالي لاختصار المتصفح:</div>
+            <code class="block bg-slate-900 text-emerald-300 px-2.5 py-1.5 rounded-lg text-left" dir="ltr">chrome.exe --kiosk-printing</code>
+        </div>
+
         <!-- Exchange Rate Tool -->
         <div class="mt-6 pt-4 border-t border-slate-200">
             <h3 class="font-bold text-sm mb-2 text-amber-800">أداة تحديث سعر الصرف الفوري</h3>
