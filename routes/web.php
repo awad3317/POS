@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\OnboardingController;
 use App\Http\Controllers\Web\OrderController;
+use App\Http\Controllers\Web\PosController;
 use App\Http\Controllers\Web\ProductController;
 use App\Http\Controllers\Web\PurchaseController;
 use App\Http\Controllers\Web\ReportController;
@@ -30,7 +31,7 @@ Route::middleware(['auth', 'store.context'])->group(function (): void {
 
     Route::middleware(['onboarding.completed'])->group(function (): void {
         Route::get('/dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
-        Route::view('/pos', 'pos.placeholder')->middleware('permission:pos.sell')->name('pos.index');
+        Route::get('/pos', [PosController::class, 'index'])->middleware('permission:pos.sell')->name('pos.index');
 
         // Smart Products & Native CSV Engine
         Route::get('/products/barcode-lookup', [ProductController::class, 'barcodeLookup'])->name('products.barcode-lookup');
