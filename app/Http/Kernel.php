@@ -85,6 +85,11 @@ class Kernel extends HttpKernel
         'password.confirm' => RequirePassword::class,
         'precognitive' => HandlePrecognitiveRequests::class,
         'signed' => ValidateSignature::class,
+        'store.context' => \App\Http\Middleware\EnsureStoreContext::class,
+        'onboarding.completed' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
     ];

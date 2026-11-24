@@ -2,59 +2,107 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToStore;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    use BelongsToStore, HasFactory;
+
     protected $fillable = [
+        'store_id',
+        'branch_id',
+        'terminal_id',
+        'shift_id',
+        'user_id',
         'customer_id',
-        'total_price'
+        'parent_order_id',
+        'client_uuid',
+        'invoice_number',
+        'type',
+        'status',
+        'subtotal',
+        'item_discount_total',
+        'order_discount_amount',
+        'tax_total',
+        'total_amount',
+        'paid_amount',
+        'credit_amount',
+        'change_amount',
+        'discount_override_by',
+        'notes',
+        'sold_at',
+        'synced_at',
     ];
 
-    public function items()
+    protected $casts = [
+        'subtotal' => 'decimal:4',
+        'item_discount_total' => 'decimal:4',
+        'order_discount_amount' => 'decimal:4',
+        'tax_total' => 'decimal:4',
+        'total_amount' => 'decimal:4',
+        'paid_amount' => 'decimal:4',
+        'credit_amount' => 'decimal:4',
+        'change_amount' => 'decimal:4',
+        'sold_at' => 'datetime',
+        'synced_at' => 'datetime',
+    ];
+
+    public function branch(): BelongsTo
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->belongsTo(Branch::class);
     }
 
-    public function payments()
+    public function terminal(): BelongsTo
     {
-        return $this->hasMany(Payment::class);
+        return $this->belongsTo(Terminal::class);
     }
 
-    public function customer()
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function getCustomerName()
+    public function parentOrder(): BelongsTo
     {
-        if($this->customer) {
-            return $this->customer->first_name . ' ' . $this->customer->last_name;
-        }
-        return __('customer.working');
+        return $this->belongsTo(self::class, 'parent_order_id');
     }
 
-    public function total()
+    public function returns(): HasMany
     {
-        return $this->items->map(function ($i){
-            return $i->price;
-        })->sum();
+        return $this->hasMany(self::class, 'parent_order_id');
     }
 
-    public function formattedTotal()
+    public function items(): HasMany
     {
-        return number_format($this->total(), 2);
+        return $this->hasMany(OrderItem::class);
     }
 
-    public function receivedAmount()
+    public function payments(): HasMany
     {
-        return $this->payments->map(function ($i){
-            return $i->amount;
-        })->sum();
+        return $this->hasMany(Payment::class);
     }
 
-    public function formattedReceivedAmount()
+    public function discountOverrideUser(): BelongsTo
     {
-        return number_format($this->receivedAmount(), 2);
+        return $this->belongsTo(User::class, 'discount_override_by');
+    }
+
+    public function getCustomerName(): string
+    {
+        return $this->customer?->name ?? 'عميل نقدي';
     }
 }
