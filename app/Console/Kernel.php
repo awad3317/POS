@@ -12,7 +12,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('backup:run --only-db --disable-notifications')
+            ->hourly()
+            ->withoutOverlapping();
+
+        $schedule->command('backup:clean --disable-notifications')
+            ->dailyAt('03:30')
+            ->withoutOverlapping();
+
+        $schedule->command('backup:monitor')
+            ->dailyAt('04:00');
     }
 
     /**
