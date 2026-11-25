@@ -28,8 +28,12 @@ function esc(value) {
 
 function fmtQty(value) {
     try {
-        const str = new PosDecimal(toQty(value ?? '0')).toFixed(3);
-        return str.replace(/\.000$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
+        const d = new PosDecimal(toQty(value ?? '0'));
+        if (!d.isFinite() || d.isZero()) {
+            return '0';
+        }
+        const trimmed = d.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+        return trimmed === '' || trimmed === '-0' ? '0' : trimmed;
     } catch {
         return '0';
     }

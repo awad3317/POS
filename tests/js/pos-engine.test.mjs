@@ -28,6 +28,11 @@ import {
     formatYemeniWhatsAppPhone,
     buildPosOrderWhatsAppUrl,
 } from '../../resources/js/pos/pos-whatsapp.js';
+import {
+    createPosApp,
+    formatInputMoney,
+    formatInputQty,
+} from '../../resources/js/pos/pos-app.js';
 
 const sampleCatalog = {
     products: [
@@ -403,5 +408,94 @@ test('WhatsApp 1-click JS helper formats Yemeni numbers and encodes Arabic POS i
     assert.equal(decoded.includes('INV-T01-2026-000010'), true);
     assert.equal(decoded.includes('5,000 ر.ي'), true);
     assert.equal(decoded.includes('2,000 ر.ي'), true);
+});
+
+test('POS input formatters strip trailing .0000/.000 across cart, Yemeni payment modal, banknotes, split payments, and shift/drawer inputs while preserving 4-decimal math', () => {
+    assert.equal(formatInputMoney('13325.0000'), '13325');
+    assert.equal(formatInputMoney('0.0000'), '0');
+    assert.equal(formatInputMoney('262.5000', 0), '262.5');
+    assert.equal(formatInputQty('20.000'), '20');
+    assert.equal(formatInputQty('2.500'), '2.5');
+    assert.equal(formatInputQty('0.375'), '0.375');
+
+    const app = createPosApp({
+        store: { name: 'بقالة الخير', currency_symbol: 'ر.ي', decimal_places: 0 },
+    });
+    app.$nextTick = (fn) => fn && fn();
+    app.$refs = {};
+    app.activeShift = { client_uuid: generateUuidV7(), expected_cash: '50000.0000', status: 'open' };
+    app.products = sampleCatalog.products;
+    app.unitsByProductId = new Map();
+    app.variantsByProductId = new Map();
+
+    // 1. Cart line item discount_amount & quantity start without trailing .0000 / .000
+    app.selectProductFromGrid({
+        id: 101,
+        type: 'simple',
+        name: 'أرز بسمتي 10 كجم',
+        barcode: '6280000000101',
+        sale_price: '13325.0000',
+        purchase_price: '11000.0000',
+        tax_rate: '0.00',
+        is_active: true,
+    });
+
+    assert.equal(app.cart.length, 1);
+    assert.equal(app.cart[0].quantity, '1');
+    assert.equal(app.cart[0].discount_amount, '0');
+    assert.equal(app.orderDiscountAmount, '0');
+    assert.equal(app.orderDiscount, '0');
+
+    // Internal Decimal.js precision remains 4 decimals / 3 decimals
+    assert.equal(app.cartComputation.totalAmount, '13325.0000');
+    assert.equal(app.cartComputation.lines[0].quantity, '1.000');
+    assert.equal(app.cartComputation.lines[0].discountAmount, '0.0000');
+
+    // 2. Yemeni Payment Modal & Quick Banknotes & Exact Cash & Split Payments
+    app.openPaymentModal();
+    assert.equal(app.paymentRows[0].amount, '13325');
+    assert.equal(app.creditAmountInput, '0');
+
+    app.applyBanknote(1000); // untouchedDefault -> replaces with '1000'
+    assert.equal(app.paymentRows[0].amount, '1000');
+
+    app.applyBanknote(5000); // adds -> '6000'
+    assert.equal(app.paymentRows[0].amount, '6000');
+
+    app.applyBanknote(10000); // adds -> '16000'
+    assert.equal(app.paymentRows[0].amount, '16000');
+
+    app.clearCashPayment();
+    assert.equal(app.paymentRows[0].amount, '0');
+
+    app.applyBanknote(20000);
+    assert.equal(app.paymentRows[0].amount, '20000');
+
+    // Exact cash ('بالضبط')
+    app.setExactCash();
+    assert.equal(app.paymentRows[0].amount, '13325');
+
+    // Split payment: set cash to 5000, add Kuraimi -> auto-fills remaining '8325' without '.0000'
+    app.paymentRows[0].amount = '5000';
+    app.addPaymentRow('kuraimi');
+    assert.equal(app.paymentRows.length, 2);
+    assert.equal(app.paymentRows[1].method, 'kuraimi');
+    assert.equal(app.paymentRows[1].amount, '8325');
+    assert.equal(app.paymentSummary.isBalanced, true);
+    assert.equal(app.paymentSummary.payments[0].amount, '5000.0000');
+    assert.equal(app.paymentSummary.payments[1].amount, '8325.0000');
+
+    // Remaining as credit
+    app.paymentRows.pop(); // keep cash 5000
+    app.setRemainingAsCredit();
+    assert.equal(app.creditAmountInput, '8325');
+
+    // 3. Shift & Drawer modal initializers strip trailing .0000
+    app.openShiftModal('25000.0000', '58000.0000');
+    assert.equal(app.shiftOpeningCash, '25000');
+    assert.equal(app.shiftClosingActualCash, '58000');
+
+    app.openDrawerModal('1500.0000');
+    assert.equal(app.drawerForm.amount, '1500');
 });
 

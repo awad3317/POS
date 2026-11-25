@@ -389,7 +389,7 @@
                                 <div class="flex items-center gap-1">
                                     <button type="button" @click.stop="adjustLineQty(idx, -1)"
                                             class="w-7 h-7 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-bold">-</button>
-                                    <input type="number" step="0.001" min="0.001" x-model="line.quantity" @click.stop
+                                    <input type="number" step="any" min="0.001" x-model="line.quantity" @change="line.quantity = formatInputQty(line.quantity)" @click.stop
                                            class="w-20 text-center rounded-lg border border-slate-300 py-1 font-bold text-xs bg-white">
                                     <button type="button" @click.stop="adjustLineQty(idx, 1)"
                                             class="w-7 h-7 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-bold">+</button>
@@ -397,7 +397,7 @@
 
                                 <div class="flex items-center gap-1">
                                     <span class="text-[11px] text-slate-500">خصم الصنف:</span>
-                                    <input type="number" step="0.01" min="0" x-model="line.discount_amount" @click.stop
+                                    <input type="number" step="any" min="0" x-model="line.discount_amount" @change="line.discount_amount = formatInputMoney(line.discount_amount)" @click.stop
                                            class="w-20 text-center rounded-lg border border-slate-300 py-1 text-xs bg-white">
                                 </div>
                             </div>
@@ -420,7 +420,7 @@
                         </div>
                         <div class="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-xl border border-slate-200">
                             <span class="text-slate-500">خصم إضافي:</span>
-                            <input type="number" min="0" step="0.01" x-model="orderDiscountAmount"
+                            <input type="number" min="0" step="any" x-model="orderDiscountAmount" @change="orderDiscountAmount = formatInputMoney(orderDiscountAmount)"
                                    class="w-20 text-left font-bold border-b border-slate-300 focus:outline-none text-xs">
                         </div>
                     </div>
@@ -487,7 +487,7 @@
                 <form @submit.prevent="openShiftLocal()" class="space-y-3 text-sm">
                     <div>
                         <label class="block text-xs font-semibold mb-1">النقد الافتتاحي بالدرج (<span x-text="currencySymbol()"></span>)</label>
-                        <input type="number" step="0.01" min="0" x-model="shiftOpeningCash" required autofocus
+                        <input type="number" step="any" min="0" x-model="shiftOpeningCash" @change="shiftOpeningCash = formatInputMoney(shiftOpeningCash)" required autofocus
                                class="w-full rounded-xl border border-slate-300 px-3 py-2.5 font-bold text-base">
                     </div>
                     <div>
@@ -513,7 +513,7 @@
 
                     <div>
                         <label class="block font-semibold mb-1">النقد الفعلي المعدود في الدرج *</label>
-                        <input type="number" step="0.01" min="0" x-model="shiftClosingActualCash" required
+                        <input type="number" step="any" min="0" x-model="shiftClosingActualCash" @change="if (shiftClosingActualCash !== '') shiftClosingActualCash = formatInputMoney(shiftClosingActualCash)" required
                                class="w-full rounded-xl border border-slate-300 px-3 py-2.5 font-bold text-base">
                     </div>
                     <div>
@@ -605,7 +605,7 @@
                             <option value="card">💳 بطاقة</option>
                             <option value="bank_transfer">🏦 تحويل بنكي</option>
                         </select>
-                        <input type="number" step="0.01" min="0" x-model="row.amount" @input="row.untouchedDefault = false"
+                        <input type="number" step="any" min="0" x-model="row.amount" @input="row.untouchedDefault = false" @change="row.amount = formatInputMoney(row.amount)"
                                placeholder="المبلغ" class="col-span-4 rounded-xl border border-slate-300 px-3 py-2 font-bold">
                         <input type="text" x-model="row.reference_number" placeholder="رقم المرجع (اختياري)"
                                class="col-span-3 rounded-xl border border-slate-300 px-2.5 py-2">
@@ -628,7 +628,7 @@
                         <label class="font-bold text-amber-900">مبلغ الآجل (على الحساب)</label>
                         <button type="button" @click="setRemainingAsCredit()" class="text-[11px] text-amber-800 underline font-bold">المتبقي آجل</button>
                     </div>
-                    <input type="number" step="0.01" min="0" x-model="creditAmountInput"
+                    <input type="number" step="any" min="0" x-model="creditAmountInput" @change="creditAmountInput = formatInputMoney(creditAmountInput)"
                            class="w-full rounded-xl border border-amber-300 px-3 py-2 font-bold text-sm bg-white">
                 </div>
 
@@ -763,7 +763,7 @@
 
                 <div>
                     <label class="block font-semibold mb-1">المبلغ (<span x-text="currencySymbol()"></span>) *</label>
-                    <input type="number" step="0.01" min="0.01" x-model="drawerForm.amount" required
+                    <input type="number" step="any" min="0.01" x-model="drawerForm.amount" @change="if (drawerForm.amount !== '') drawerForm.amount = formatInputMoney(drawerForm.amount)" required
                            class="w-full rounded-xl border border-slate-300 px-3 py-2 font-bold text-sm">
                 </div>
 

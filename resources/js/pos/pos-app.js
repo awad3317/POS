@@ -43,6 +43,52 @@ const EXPENSE_CATEGORIES = [
     'نثريات عامة',
 ];
 
+/**
+ * Formats a money value for HTML <input> fields without commas or unnecessary trailing zeros
+ * (e.g. '13325.0000' -> '13325', '0.0000' -> '0', '262.5000' -> '262.5').
+ * Keeps internal Decimal.js / API precision untouched.
+ */
+export function formatInputMoney(val, decimalPlaces = 0) {
+    if (val === null || val === undefined || String(val).trim() === '') {
+        return '0';
+    }
+    try {
+        const dp = Math.max(0, Math.min(4, Number.parseInt(String(decimalPlaces ?? 0), 10) || 0));
+        const d = new PosDecimal(String(val).trim());
+        if (!d.isFinite() || d.isZero()) {
+            return '0';
+        }
+        // Round to 4 decimals (money scale); if value fits within store decimal_places, no extra zeros remain
+        const scaled4 = d.toDecimalPlaces(4, PosDecimal.ROUND_HALF_UP);
+        const scaledDp = d.toDecimalPlaces(dp, PosDecimal.ROUND_HALF_UP);
+        const fixed = scaled4.eq(scaledDp) ? scaledDp.toFixed(dp) : scaled4.toFixed(4);
+        const trimmed = fixed.includes('.') ? fixed.replace(/0+$/, '').replace(/\.$/, '') : fixed;
+        return trimmed === '' || trimmed === '-0' ? '0' : trimmed;
+    } catch {
+        return '0';
+    }
+}
+
+/**
+ * Formats a quantity value for HTML <input> fields without unnecessary trailing zeros
+ * (e.g. '20.000' -> '20', '2.500' -> '2.5', '0.375' -> '0.375').
+ */
+export function formatInputQty(val) {
+    if (val === null || val === undefined || String(val).trim() === '') {
+        return '0';
+    }
+    try {
+        const d = new PosDecimal(toQty(val));
+        if (!d.isFinite() || d.isZero()) {
+            return '0';
+        }
+        const trimmed = d.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+        return trimmed === '' || trimmed === '-0' ? '0' : trimmed;
+    } catch {
+        return '0';
+    }
+}
+
 async function hashPinSafe(pin, salt = 'yemen-pos-pin') {
     const input = `${salt}:${String(pin ?? '').trim()}`;
     try {
@@ -120,7 +166,7 @@ export function createPosApp(bootConfig = {}) {
         searchQuery: '',
         cart: [],
         selectedLineIndex: 0,
-        orderDiscountAmount: '0',
+        orderDiscountAmount: formatInputMoney('0'),
         orderNotes: '',
         selectedCustomer: null,
         managerOverridePin: '',
@@ -133,17 +179,17 @@ export function createPosApp(bootConfig = {}) {
         overridePinError: '',
 
         // Shift modal inputs
-        shiftOpeningCash: '0',
+        shiftOpeningCash: formatInputMoney('0'),
         shiftClosingActualCash: '',
         shiftNotes: '',
 
         // Payment modal state
-        paymentRows: [{ method: 'cash', amount: '0', reference_number: '', untouchedDefault: true }],
-        creditAmountInput: '0',
+        paymentRows: [{ method: 'cash', amount: formatInputMoney('0'), reference_number: '', untouchedDefault: true }],
+        creditAmountInput: formatInputMoney('0'),
         paymentNotes: '',
         customerSearchQuery: '',
         showNewCustomerForm: false,
-        newCustomerForm: { name: '', phone: '', credit_limit: '0', address: '' },
+        newCustomerForm: { name: '', phone: '', credit_limit: formatInputMoney('0'), address: '' },
         paymentOverridePin: '',
 
         // Quick Drawer modal state
@@ -438,13 +484,23 @@ export function createPosApp(bootConfig = {}) {
         },
 
         fmtQty(val) {
-            try {
-                const d = new PosDecimal(toQty(val ?? '0'));
-                const s = d.toFixed(3);
-                return s.replace(/\.000$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
-            } catch {
-                return '0';
-            }
+            return formatInputQty(val);
+        },
+
+        formatInputMoney(val) {
+            return formatInputMoney(val, this.decimalPlaces());
+        },
+
+        formatInputQty(val) {
+            return formatInputQty(val);
+        },
+
+        get orderDiscount() {
+            return this.orderDiscountAmount;
+        },
+
+        set orderDiscount(val) {
+            this.orderDiscountAmount = val;
         },
 
         // Instant in-memory search (< 2ms, max 20 results) — pure getter with zero reactive mutations
@@ -681,7 +737,7 @@ export function createPosApp(bootConfig = {}) {
                     .add(new PosDecimal(toQty(res.quantity || '1.000')))
                     .toDecimalPlaces(3, PosDecimal.ROUND_HALF_UP)
                     .toFixed(3);
-                existing.quantity = newQty;
+                existing.quantity = this.formatInputQty(newQty);
                 this.selectedLineIndex = existingIdx;
             } else {
                 this.cart.push({
@@ -693,9 +749,9 @@ export function createPosApp(bootConfig = {}) {
                     barcode_snapshot: res.barcode || variant?.barcode || unit?.barcode || product.barcode || null,
                     unit_name_snapshot: unit?.unit_name || (product.type === 'weighted' ? 'كجم' : 'حبة'),
                     conversion_factor: toQty(res.conversionFactor || unit?.conversion_factor || '1.000'),
-                    quantity: toQty(res.quantity || '1.000'),
+                    quantity: this.formatInputQty(res.quantity || '1.000'),
                     unit_price: toMoney(res.unitPrice ?? unit?.sale_price ?? variant?.sale_price ?? product.sale_price ?? '0'),
-                    discount_amount: '0.0000',
+                    discount_amount: this.formatInputMoney('0'),
                     tax_rate: product.tax_rate ?? '0.00',
                     product_min_cost: product.min_allowed_sale_price ?? product.purchase_price ?? '0.0000',
                     variant_min_cost: variant ? (variant.min_allowed_sale_price ?? variant.purchase_price ?? '0.0000') : null,
@@ -743,7 +799,7 @@ export function createPosApp(bootConfig = {}) {
             if (next.lte(0)) {
                 return;
             }
-            line.quantity = next.toFixed(3);
+            line.quantity = this.formatInputQty(next.toFixed(3));
         },
 
         async removeCartItem(index) {
@@ -811,7 +867,7 @@ export function createPosApp(bootConfig = {}) {
             });
             this.cart = [];
             this.selectedCustomer = null;
-            this.orderDiscountAmount = '0';
+            this.orderDiscountAmount = this.formatInputMoney('0');
             this.orderNotes = '';
             this.managerOverridePin = '';
             this.heldCarts = await posDb.held_carts.orderBy('created_at').reverse().toArray();
@@ -836,8 +892,12 @@ export function createPosApp(bootConfig = {}) {
                 });
             }
 
-            this.cart = (held.items || []).map((i) => ({ ...i }));
-            this.orderDiscountAmount = held.order_discount_amount || '0';
+            this.cart = (held.items || []).map((i) => ({
+                ...i,
+                quantity: this.formatInputQty(i.quantity ?? '1'),
+                discount_amount: this.formatInputMoney(i.discount_amount ?? '0'),
+            }));
+            this.orderDiscountAmount = this.formatInputMoney(held.order_discount_amount || '0');
             this.orderNotes = held.order_notes || '';
             this.selectedCustomer = held.customer_id || held.customer_client_uuid
                 ? (this.customers.find(
@@ -859,9 +919,11 @@ export function createPosApp(bootConfig = {}) {
         },
 
         // Shift Management
-        openShiftModal() {
-            this.shiftOpeningCash = '0';
-            this.shiftClosingActualCash = '';
+        openShiftModal(initialOpeningCash = '0', initialClosingCash = '') {
+            const openVal = (typeof initialOpeningCash === 'string' || typeof initialOpeningCash === 'number') ? initialOpeningCash : '0';
+            const closeVal = (typeof initialClosingCash === 'string' || typeof initialClosingCash === 'number') ? initialClosingCash : '';
+            this.shiftOpeningCash = this.formatInputMoney(openVal);
+            this.shiftClosingActualCash = closeVal !== '' ? this.formatInputMoney(closeVal) : '';
             this.shiftNotes = '';
             this.modal = 'shift';
         },
@@ -1153,13 +1215,13 @@ export function createPosApp(bootConfig = {}) {
             }
 
             this.paymentRows = [
-                { method: 'cash', amount: comp.totalAmount, reference_number: '', untouchedDefault: true },
+                { method: 'cash', amount: this.formatInputMoney(comp.totalAmount), reference_number: '', untouchedDefault: true },
             ];
-            this.creditAmountInput = '0';
+            this.creditAmountInput = this.formatInputMoney('0');
             this.paymentNotes = this.orderNotes || '';
             this.customerSearchQuery = '';
             this.showNewCustomerForm = false;
-            this.newCustomerForm = { name: '', phone: '', credit_limit: '0', address: '' };
+            this.newCustomerForm = { name: '', phone: '', credit_limit: this.formatInputMoney('0'), address: '' };
             this.paymentOverridePin = this.managerOverridePin || '';
             this.modal = 'payment';
         },
@@ -1167,21 +1229,21 @@ export function createPosApp(bootConfig = {}) {
         applyBanknote(denomination) {
             let cashRow = this.paymentRows.find((r) => r.method === 'cash');
             if (!cashRow) {
-                cashRow = { method: 'cash', amount: '0', reference_number: '', untouchedDefault: false };
+                cashRow = { method: 'cash', amount: this.formatInputMoney('0'), reference_number: '', untouchedDefault: false };
                 this.paymentRows.unshift(cashRow);
             }
             if (cashRow.untouchedDefault) {
-                cashRow.amount = toMoney(denomination);
+                cashRow.amount = this.formatInputMoney(denomination);
                 cashRow.untouchedDefault = false;
             } else {
-                cashRow.amount = addMoney(cashRow.amount || '0', denomination);
+                cashRow.amount = this.formatInputMoney(addMoney(cashRow.amount || '0', denomination));
             }
         },
 
         setExactCash() {
             let cashRow = this.paymentRows.find((r) => r.method === 'cash');
             if (!cashRow) {
-                cashRow = { method: 'cash', amount: '0', reference_number: '', untouchedDefault: false };
+                cashRow = { method: 'cash', amount: this.formatInputMoney('0'), reference_number: '', untouchedDefault: false };
                 this.paymentRows.unshift(cashRow);
             }
             let otherPaid = new PosDecimal('0');
@@ -1196,22 +1258,40 @@ export function createPosApp(bootConfig = {}) {
             }
             const credit = new PosDecimal(toMoney(this.creditAmountInput || '0'));
             const needed = new PosDecimal(this.cartComputation.totalAmount).sub(otherPaid).sub(credit);
-            cashRow.amount = needed.gt(0) ? needed.toFixed(4) : '0.0000';
+            cashRow.amount = needed.gt(0) ? this.formatInputMoney(needed.toFixed(4)) : this.formatInputMoney('0');
             cashRow.untouchedDefault = false;
         },
 
         clearCashPayment() {
             const cashRow = this.paymentRows.find((r) => r.method === 'cash');
             if (cashRow) {
-                cashRow.amount = '0';
+                cashRow.amount = this.formatInputMoney('0');
                 cashRow.untouchedDefault = false;
             }
         },
 
         addPaymentRow(method = 'kuraimi') {
+            let paidSum = new PosDecimal('0');
+            for (const r of this.paymentRows) {
+                try {
+                    const amt = new PosDecimal(toMoney(r.amount || '0'));
+                    if (amt.gt(0)) {
+                        paidSum = paidSum.add(amt);
+                    }
+                } catch {
+                    // ignore invalid row
+                }
+            }
+            let credit = new PosDecimal('0');
+            try {
+                credit = new PosDecimal(toMoney(this.creditAmountInput || '0'));
+            } catch {
+                credit = new PosDecimal('0');
+            }
+            const remaining = new PosDecimal(this.cartComputation.totalAmount).sub(paidSum).sub(credit);
             this.paymentRows.push({
                 method,
-                amount: '0',
+                amount: remaining.gt(0) ? this.formatInputMoney(remaining.toFixed(4)) : this.formatInputMoney('0'),
                 reference_number: '',
                 untouchedDefault: false,
             });
@@ -1220,7 +1300,7 @@ export function createPosApp(bootConfig = {}) {
         removePaymentRow(idx) {
             this.paymentRows.splice(idx, 1);
             if (this.paymentRows.length === 0) {
-                this.creditAmountInput = this.cartComputation.totalAmount;
+                this.creditAmountInput = this.formatInputMoney(this.cartComputation.totalAmount);
             }
         },
 
@@ -1237,7 +1317,7 @@ export function createPosApp(bootConfig = {}) {
                 }
             }
             const remaining = new PosDecimal(this.cartComputation.totalAmount).sub(paidSum);
-            this.creditAmountInput = remaining.gt(0) ? remaining.toFixed(4) : '0.0000';
+            this.creditAmountInput = remaining.gt(0) ? this.formatInputMoney(remaining.toFixed(4)) : this.formatInputMoney('0');
         },
 
         async createOfflineCustomer() {
@@ -1481,7 +1561,7 @@ export function createPosApp(bootConfig = {}) {
             this.cart = [];
             this.selectedCustomer = null;
             this.selectedLineIndex = 0;
-            this.orderDiscountAmount = '0';
+            this.orderDiscountAmount = this.formatInputMoney('0');
             this.orderNotes = '';
             this.managerOverridePin = '';
             this.paymentOverridePin = '';
@@ -1499,16 +1579,17 @@ export function createPosApp(bootConfig = {}) {
         },
 
         // Quick Drawer Movements (Offline)
-        openDrawerModal() {
+        openDrawerModal(initialAmount = '') {
             if (!this.activeShift) {
                 this.openShiftModal();
                 this.showToast('warning', 'حركات الدرج تتطلب فتح وردية أولاً.');
                 return;
             }
+            const amtVal = (typeof initialAmount === 'string' || typeof initialAmount === 'number') ? initialAmount : '';
             this.drawerTab = 'expense';
             this.drawerForm = {
                 category: EXPENSE_CATEGORIES[0],
-                amount: '',
+                amount: amtVal !== '' ? this.formatInputMoney(amtVal) : '',
                 payee_id: '',
                 method: 'cash',
                 reference_number: '',
