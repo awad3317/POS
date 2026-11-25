@@ -1,6 +1,6 @@
 {
-  "name": "Yemen POS — نظام نقاط البيع اليمني",
-  "short_name": "Yemen POS",
+  "name": "تيار بلس — نظام نقاط البيع والمحاسبة",
+  "short_name": "تيار بلس",
   "description": "نظام نقاط بيع أوفلاين متكامل للسوق اليمني",
   "start_url": "/pos",
   "scope": "/",
@@ -8,7 +8,7 @@
   "orientation": "any",
   "dir": "rtl",
   "lang": "ar",
-  "background_color": "#0f172a",
+  "background_color": "#F9FAFB",
   "theme_color": "#059669",
   "icons": [
     {

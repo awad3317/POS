@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yemen-pos-v2';
+const CACHE_NAME = 'tayar-plus-v3';
 const STATIC_CACHE = `${CACHE_NAME}-static`;
 const PAGE_CACHE = `${CACHE_NAME}-pages`;
 
@@ -10,6 +10,7 @@ const PRECACHE_URLS = [
     '/fonts/ibm-plex-sans-arabic-700.woff2',
     '/icons/icon-192.png',
     '/icons/icon-512.png',
+    '/img/tayar-plus-logo.png',
 ];
 
 function isNetworkOnlyPath(pathname) {
@@ -137,7 +138,7 @@ self.addEventListener('fetch', (event) => {
                 }
 
                 return new Response(
-                    '<!DOCTYPE html><html lang="ar" dir="rtl"><meta charset="utf-8"><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>تعذر فتح الكاشير أوفلاين</h2><p>يرجى فتح /pos مرة واحدة أثناء توفر الإنترنت لتخزين الصفحة محلياً.</p></body></html>',
+                    '<!DOCTYPE html><html lang="ar" dir="rtl"><meta charset="utf-8"><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>تيار بلس — تعذر فتح الكاشير أوفلاين</h2><p>يرجى فتح /pos مرة واحدة أثناء توفر الإنترنت لتخزين الصفحة محلياً.</p></body></html>',
                     { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
                 );
             }

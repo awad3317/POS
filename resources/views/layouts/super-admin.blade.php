@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#059669">
-    <link rel="icon" type="image/png" href="/icons/icon-192.png">
-    <title>@yield('title', 'إدارة المنصة والاشتراكات') — Yemen POS SaaS</title>
+    <link rel="icon" type="image/png" href="{{ asset('icons/icon-192.png') }}?v=2">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}?v=2">
+    <title>@yield('title', 'إدارة المنصة والاشتراكات') — تيار بلس</title>
     @hasSection('vite_entry')
         @yield('vite_entry')
     @else
@@ -28,15 +29,11 @@
 
             {{-- Brand & Title --}}
             <a href="{{ route('super-admin.index') }}" class="flex min-w-0 items-center gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-emerald-400 shadow-xs">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.85">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                    </svg>
-                </div>
+                <x-brand-logo size="md" />
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
                         <span class="truncate text-sm font-bold text-gray-900 sm:text-base">
-                            لوحة إدارة منصة Yemen POS
+                            لوحة إدارة منصة تيار بلس
                         </span>
                         <span class="hidden items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 sm:inline-flex">
                             <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -105,9 +102,9 @@
     </header>
 
     {{-- Alerts Area --}}
-    @if(session('success') || session('error') || $errors->any())
+    @if (session('success') || session('error') || $errors->any())
     <div class="mx-auto w-full max-w-screen-2xl space-y-2.5 px-4 pt-5 sm:px-6 lg:px-8 print:hidden">
-        @if(session('success'))
+        @if (session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" x-transition
                  class="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
                 <div class="flex items-center gap-2.5">
@@ -124,7 +121,7 @@
             </div>
         @endif
 
-        @if(session('error'))
+        @if (session('error'))
             <div x-data="{ show: true }" x-show="show" x-transition
                  class="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
                 <div class="flex items-center gap-2.5">
@@ -141,7 +138,7 @@
             </div>
         @endif
 
-        @if($errors->any())
+        @if ($errors->any())
             <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
                 <div class="mb-1.5 flex items-center gap-2 text-sm font-bold">
                     <svg class="h-5 w-5 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -150,7 +147,7 @@
                     <span>يرجى مراجعة الحقول التالية:</span>
                 </div>
                 <ul class="list-disc space-y-0.5 pr-6 text-xs">
-                    @foreach($errors->all() as $err)
+                    @foreach ($errors->all() as $err)
                         <li>{{ $err }}</li>
                     @endforeach
                 </ul>

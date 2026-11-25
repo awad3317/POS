@@ -6,8 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#059669">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="/icons/icon-192.png">
-    <title>@yield('title', 'لوحة الإدارة') — {{ auth()->user()?->store?->name ?? 'Yemen POS' }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('icons/icon-192.png') }}?v=2">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}?v=2">
+    <title>@yield('title', 'لوحة الإدارة') — {{ auth()->user()?->store?->name ?? 'تيار بلس' }}</title>
     @hasSection('vite_entry')
         @yield('vite_entry')
     @else
@@ -46,7 +47,7 @@
         'perfumes' => 'عطور ومستحضرات',
         'general'  => 'تجزئة عامة',
     ];
-    $businessLabel = $businessLabels[$currentStore?->business_type ?? 'general'] ?? 'نظام نقاط البيع';
+    $businessLabel = $businessLabels[$currentStore?->business_type ?? 'general'] ?? 'تيار بلس';
 
     $userInitial = mb_substr(trim((string) ($authUser?->name ?? 'م')), 0, 1);
 
@@ -86,18 +87,14 @@
         {{-- Store Brand Header --}}
         <div class="flex h-[70px] shrink-0 items-center justify-between border-b border-gray-100 px-4">
             <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-3">
-                @if($currentStore?->logo_path)
+                @if ($currentStore?->logo_path)
                     <img src="{{ asset('storage/' . $currentStore->logo_path) }}" alt="{{ $currentStore->name }}"
                          class="h-9 w-9 shrink-0 rounded-xl border border-gray-200 object-cover">
                 @else
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-emerald-400 shadow-xs">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                        </svg>
-                    </div>
+                    <x-brand-logo size="sm" />
                 @endif
                 <div class="min-w-0" x-show="!sidebarCollapsed" x-transition.opacity>
-                    <div class="truncate text-sm font-bold text-gray-900">{{ $currentStore?->name ?? 'Yemen POS' }}</div>
+                    <div class="truncate text-sm font-bold text-gray-900">{{ $currentStore?->name ?? 'تيار بلس' }}</div>
                     <div class="truncate text-[11px] text-gray-500">{{ $businessLabel }}</div>
                 </div>
             </a>
@@ -186,10 +183,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="flex-1 truncate">المنتجات والباركود</span>
-                    @if($lowStockCount > 0)
+                    @if ($lowStockCount > 0)
                         <span x-show="!sidebarCollapsed"
                               title="أصناف وصلت لحد النواقص"
-                              class="inline-flex min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                              class="inline-flex min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white tabular-nums">
                             {{ $lowStockCount > 99 ? '+99' : $lowStockCount }}
                         </span>
                     @endif
@@ -272,7 +269,7 @@
             </div>
 
             {{-- Group 4: Reports & System --}}
-            @if($authUser?->can('reports.view_profit') || $authUser?->can('settings.manage'))
+            @if ($authUser?->can('reports.view_profit') || $authUser?->can('settings.manage'))
             <div x-show="!sidebarCollapsed" class="px-3 pb-1.5 pt-5 text-[11px] font-semibold tracking-wide text-gray-400">
                 التقارير والنظام
             </div>
@@ -366,10 +363,10 @@
             {{-- Left Utility Actions --}}
             <div class="flex shrink-0 items-center gap-2.5">
                 {{-- Exchange Rate Pill --}}
-                @if($currentStore?->secondary_currency_code && $currentStore?->exchange_rate)
+                @if ($currentStore?->secondary_currency_code && $currentStore?->exchange_rate)
                     <a href="{{ $authUser?->can('settings.manage') ? route('settings.index') : '#' }}"
                        title="سعر الصرف المعتمد حالياً"
-                       class="hidden items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-100 md:inline-flex">
+                       class="hidden items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-100 md:inline-flex tabular-nums">
                         <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -445,9 +442,9 @@
         </header>
 
         {{-- Alerts Area --}}
-        @if(session('success') || session('error') || $errors->any())
+        @if (session('success') || session('error') || $errors->any())
         <div class="mx-auto w-full max-w-screen-2xl space-y-2.5 px-4 pt-5 lg:px-6 print:hidden">
-            @if(session('success'))
+            @if (session('success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" x-transition
                      class="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
                     <div class="flex items-center gap-2.5">
@@ -464,7 +461,7 @@
                 </div>
             @endif
 
-            @if(session('error'))
+            @if (session('error'))
                 <div x-data="{ show: true }" x-show="show" x-transition
                      class="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
                     <div class="flex items-center gap-2.5">
@@ -481,7 +478,7 @@
                 </div>
             @endif
 
-            @if($errors->any())
+            @if ($errors->any())
                 <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
                     <div class="mb-1.5 flex items-center gap-2 text-sm font-bold">
                         <svg class="h-5 w-5 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -490,7 +487,7 @@
                         <span>يرجى مراجعة الحقول التالية:</span>
                     </div>
                     <ul class="list-disc space-y-0.5 pr-6 text-xs">
-                        @foreach($errors->all() as $err)
+                        @foreach ($errors->all() as $err)
                             <li>{{ $err }}</li>
                         @endforeach
                     </ul>
