@@ -22,7 +22,7 @@
             </div>
             <div>
                 <label class="block font-semibold mb-1">المبلغ *</label>
-                <input type="number" step="0.0001" name="amount" required class="w-full border rounded-xl px-3 py-2">
+                <input type="number" step="any" name="amount" required class="w-full border rounded-xl px-3 py-2">
             </div>
             <div>
                 <label class="block font-semibold mb-1">مصدر الصرف</label>
@@ -49,7 +49,7 @@
     <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div class="p-4 border-b flex justify-between text-xs">
             <span class="font-bold text-sm">سجل المصروفات</span>
-            <span>إجمالي هذا الشهر: <strong class="text-rose-600">{{ number_format((float) $monthTotal, $store->decimal_places) }} {{ $sym }}</strong></span>
+            <span>إجمالي هذا الشهر: <strong class="text-rose-600">{{ format_money($monthTotal, $store->decimal_places) }} {{ $sym }}</strong></span>
         </div>
         <table class="w-full text-xs text-right">
             <thead class="bg-slate-50 border-b">
@@ -65,7 +65,7 @@
                 @forelse($expenses as $ex)
                 <tr>
                     <td class="p-2.5 font-semibold">{{ $ex->category }}</td>
-                    <td class="p-2.5 font-bold text-rose-600">{{ number_format((float) $ex->amount, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-2.5 font-bold text-rose-600">{{ format_money($ex->amount, $store->decimal_places) }} {{ $sym }}</td>
                     <td class="p-2.5">{{ $ex->payment_source }}</td>
                     <td class="p-2.5">{{ $ex->spent_at?->format('Y-m-d H:i') }}</td>
                     <td class="p-2.5 text-slate-500">{{ $ex->notes }}</td>

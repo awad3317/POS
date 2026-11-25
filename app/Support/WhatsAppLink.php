@@ -45,9 +45,9 @@ final class WhatsAppLink
         $currency = $store->currency_symbol ?: 'ر.ي';
         $dp = (int) $store->decimal_places;
 
-        $totalFmt = number_format((float) $order->total_amount, $dp) . ' ' . $currency;
-        $paidFmt = number_format((float) $order->paid_amount, $dp) . ' ' . $currency;
-        $creditFmt = number_format((float) $order->credit_amount, $dp) . ' ' . $currency;
+        $totalFmt = DisplayFormat::formatMoney($order->total_amount, $dp) . ' ' . $currency;
+        $paidFmt = DisplayFormat::formatMoney($order->paid_amount, $dp) . ' ' . $currency;
+        $creditFmt = DisplayFormat::formatMoney($order->credit_amount, $dp) . ' ' . $currency;
         $title = $order->type === 'return' ? 'سند مرتجع مبيعات' : 'فاتورة مبيعات';
 
         $lines = [
@@ -59,8 +59,8 @@ final class WhatsAppLink
         ];
 
         foreach ($order->items->take(15) as $item) {
-            $qty = rtrim(rtrim((string) $item->quantity, '0'), '.');
-            $net = number_format((float) $item->net_total, $dp);
+            $qty = DisplayFormat::formatQty($item->quantity);
+            $net = DisplayFormat::formatMoney($item->net_total, $dp);
             $lines[] = "• {$item->product_name} ({$qty}) = {$net} {$currency}";
         }
 
@@ -91,7 +91,7 @@ final class WhatsAppLink
     {
         $currency = $store->currency_symbol ?: 'ر.ي';
         $dp = (int) $store->decimal_places;
-        $balanceFmt = number_format((float) $customer->current_balance, $dp) . ' ' . $currency;
+        $balanceFmt = DisplayFormat::formatMoney($customer->current_balance, $dp) . ' ' . $currency;
 
         $message = "عزيزنا العميل / {$customer->name}\n"
             . "تحية طيبة من {$store->name}\n"
@@ -106,7 +106,7 @@ final class WhatsAppLink
         $currency = $store->currency_symbol ?: 'ر.ي';
         $dp = (int) $store->decimal_places;
         $balance = $closingBalance ?? (string) $supplier->current_balance;
-        $balanceFmt = number_format((float) $balance, $dp) . ' ' . $currency;
+        $balanceFmt = DisplayFormat::formatMoney($balance, $dp) . ' ' . $currency;
 
         $message = "الإخوة / {$supplier->name}\n"
             . "تحية طيبة من {$store->name}\n"
@@ -121,7 +121,7 @@ final class WhatsAppLink
         $currency = $store->currency_symbol ?: 'ر.ي';
         $dp = (int) $store->decimal_places;
         $balance = $closingBalance ?? (string) $employee->current_balance;
-        $balanceFmt = number_format((float) $balance, $dp) . ' ' . $currency;
+        $balanceFmt = DisplayFormat::formatMoney($balance, $dp) . ' ' . $currency;
 
         $message = "كشف حساب الراتب والسلف — {$store->name}\n"
             . "الموظف: {$employee->name}\n"

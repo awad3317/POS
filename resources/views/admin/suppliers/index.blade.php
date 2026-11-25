@@ -6,7 +6,7 @@
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-4" x-data="{ addModal: false, paySupplier: null }">
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-2.5 text-xs">
-        إجمالي المستحق للموردين على المحل: <span class="font-bold text-rose-600 text-sm">{{ number_format((float) $totalPayables, $store->decimal_places) }} {{ $sym }}</span>
+        إجمالي المستحق للموردين على المحل: <span class="font-bold text-rose-600 text-sm">{{ format_money($totalPayables, $store->decimal_places) }} {{ $sym }}</span>
     </div>
     <div class="flex gap-2">
         <a href="{{ route('purchases.create') }}" class="px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">+ فاتورة مشتريات</a>
@@ -30,9 +30,9 @@
                 <tr>
                     <td class="p-3 font-semibold">{{ $s->name }} <span class="text-slate-400">{{ $s->company_name }}</span></td>
                     <td class="p-3">{{ $s->phone ?? '—' }}</td>
-                    <td class="p-3">{{ number_format((float) ($s->total_purchases ?? 0), $store->decimal_places) }} {{ $sym }}</td>
-                    <td class="p-3 text-emerald-700">{{ number_format((float) ($s->total_payments ?? 0), $store->decimal_places) }} {{ $sym }}</td>
-                    <td class="p-3 font-bold text-rose-600">{{ number_format((float) $s->current_balance, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3">{{ format_money($s->total_purchases ?? 0, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3 text-emerald-700">{{ format_money($s->total_payments ?? 0, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3 font-bold text-rose-600">{{ format_money($s->current_balance, $store->decimal_places) }} {{ $sym }}</td>
                     <td class="p-3 flex items-center gap-2">
                         <button type="button" @click="paySupplier = { id: {{ $s->id }}, name: '{{ addslashes($s->name) }}' }"
                                 class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-semibold">سند صرف</button>
@@ -56,7 +56,7 @@
             <input type="text" name="name" required placeholder="اسم المورد *" class="w-full border rounded-xl px-3 py-2">
             <input type="text" name="company_name" placeholder="اسم الشركة / الوكالة" class="w-full border rounded-xl px-3 py-2">
             <input type="text" name="phone" placeholder="رقم الهاتف / واتساب" class="w-full border rounded-xl px-3 py-2">
-            <input type="number" step="0.0001" name="opening_balance" value="0" placeholder="رصيد افتتاحي مستحق للمورد" class="w-full border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="opening_balance" value="0" placeholder="رصيد افتتاحي مستحق للمورد" class="w-full border rounded-xl px-3 py-2">
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="addModal = false" class="px-3 py-1.5 border rounded-lg">إلغاء</button>
                 <button type="submit" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg font-bold">حفظ</button>
@@ -69,7 +69,7 @@
         <form method="POST" :action="`/suppliers/${paySupplier?.id}/payments`" @click.outside="paySupplier = null" class="bg-white rounded-2xl max-w-md w-full p-6 space-y-3 text-xs">
             @csrf
             <h3 class="font-bold text-sm">سند صرف للمورد: <span x-text="paySupplier?.name"></span></h3>
-            <input type="number" step="0.0001" name="amount" required placeholder="المبلغ المسدد *" class="w-full border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="amount" required placeholder="المبلغ المسدد *" class="w-full border rounded-xl px-3 py-2">
             <select name="method" class="w-full border rounded-xl px-3 py-2">
                 <option value="cash">نقدي</option>
                 <option value="kuraimi">الكريمي</option>

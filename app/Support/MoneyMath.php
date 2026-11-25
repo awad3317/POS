@@ -108,4 +108,19 @@ final class MoneyMath
 
         return $total->toScale($scale, RoundingMode::HALF_UP)->__toString();
     }
+
+    public static function formatQty(string|int|float|null $qty): string
+    {
+        return DisplayFormat::formatQty($qty);
+    }
+
+    public static function formatMoney(string|int|float|null $amount, ?int $decimals = null, bool $forInput = false): string
+    {
+        return DisplayFormat::formatMoney($amount, $decimals, $forInput);
+    }
+
+    public static function formatInput(string|int|float|null $value, bool $nullable = false): string
+    {
+        return DisplayFormat::formatInput($value, $nullable);
+    }
 }

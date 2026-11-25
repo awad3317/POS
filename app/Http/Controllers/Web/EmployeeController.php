@@ -151,10 +151,7 @@ class EmployeeController extends Controller
 
         $statement = $this->employeeAccountService->getEmployeeStatement($employee, $from, $to);
 
-        $whatsappUrl = WhatsAppLink::build(
-            $employee->whatsapp ?: $employee->phone,
-            "كشف حساب الراتب والسلف — {$store->name}\nالموظف: {$employee->name}\nصافي الرصيد الحالي: {$statement['closing_balance']} {$store->currency_symbol}."
-        );
+        $whatsappUrl = WhatsAppLink::forEmployeeStatement($employee, $store, $statement['closing_balance']);
 
         return view('admin.employees.statement', compact('store', 'employee', 'statement', 'whatsappUrl', 'from', 'to'));
     }

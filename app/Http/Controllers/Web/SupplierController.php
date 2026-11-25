@@ -102,10 +102,7 @@ class SupplierController extends Controller
 
         $statement = $this->supplierAccountService->getSupplierStatement($supplier, $from, $to);
 
-        $whatsappUrl = WhatsAppLink::build(
-            $supplier->whatsapp ?: $supplier->phone,
-            "الإخوة / {$supplier->name}\nتحية طيبة من {$store->name}\nالرصيد الحالي المستحق لكم في دفاترنا: {$statement['closing_balance']} {$store->currency_symbol}."
-        );
+        $whatsappUrl = WhatsAppLink::forSupplierPayment($supplier, $store, $statement['closing_balance']);
 
         return view('admin.suppliers.statement', compact('store', 'supplier', 'statement', 'whatsappUrl', 'from', 'to'));
     }

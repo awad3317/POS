@@ -16,7 +16,7 @@
             <div>
                 <div class="text-xs text-slate-400">مبيعات اليوم ({{ $todayOrdersCount }} فاتورة)</div>
                 <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-0.5">
-                    {{ number_format((float) $todaySales, $dp) }} {{ $sym }}
+                    {{ format_money($todaySales, $dp) }} {{ $sym }}
                 </div>
             </div>
             <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
@@ -27,15 +27,15 @@
         <div class="grid grid-cols-3 gap-2 sm:gap-3 pt-3 border-t border-slate-800 text-xs">
             <div class="bg-slate-800/80 rounded-xl p-2.5">
                 <div class="text-slate-400">نقدي</div>
-                <div class="font-bold text-emerald-300 text-sm mt-0.5">{{ number_format((float) $todayCashSales, $dp) }} {{ $sym }}</div>
+                <div class="font-bold text-emerald-300 text-sm mt-0.5">{{ format_money($todayCashSales, $dp) }} {{ $sym }}</div>
             </div>
             <div class="bg-slate-800/80 rounded-xl p-2.5">
                 <div class="text-slate-400">محافظ وبنوك</div>
-                <div class="font-bold text-sky-300 text-sm mt-0.5">{{ number_format((float) $todayWalletSales, $dp) }} {{ $sym }}</div>
+                <div class="font-bold text-sky-300 text-sm mt-0.5">{{ format_money($todayWalletSales, $dp) }} {{ $sym }}</div>
             </div>
             <div class="bg-slate-800/80 rounded-xl p-2.5">
                 <div class="text-slate-400">آجل (ذمم)</div>
-                <div class="font-bold text-amber-300 text-sm mt-0.5">{{ number_format((float) $todayCreditSales, $dp) }} {{ $sym }}</div>
+                <div class="font-bold text-amber-300 text-sm mt-0.5">{{ format_money($todayCreditSales, $dp) }} {{ $sym }}</div>
             </div>
         </div>
     </div>
@@ -45,7 +45,7 @@
         <div class="flex items-center justify-between mb-3">
             <h2 class="font-bold text-sm text-slate-900">النقد المتوقع في الأدراج المفتوحة</h2>
             <span class="font-extrabold text-emerald-700">
-                الإجمالي: {{ number_format((float) $metrics['cash_in_drawers'], $dp) }} {{ $sym }}
+                الإجمالي: {{ format_money($metrics['cash_in_drawers'], $dp) }} {{ $sym }}
             </span>
         </div>
 
@@ -60,7 +60,7 @@
                         <div class="text-slate-500">الكاشير: {{ $sh->user?->name }} • {{ $sh->opened_at?->format('H:i') }}</div>
                     </div>
                     <div class="text-left font-extrabold text-emerald-700 text-sm">
-                        {{ number_format((float) $sh->expected_cash, $dp) }} {{ $sym }}
+                        {{ format_money($sh->expected_cash, $dp) }} {{ $sym }}
                     </div>
                 </a>
                 @endforeach
@@ -72,19 +72,19 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
         <div class="bg-white rounded-2xl border border-emerald-200 p-4">
             <div class="text-emerald-700 font-semibold">لنا عند العملاء</div>
-            <div class="text-lg font-extrabold text-emerald-800 mt-1">{{ number_format((float) $metrics['customer_receivables'], $dp) }} {{ $sym }}</div>
+            <div class="text-lg font-extrabold text-emerald-800 mt-1">{{ format_money($metrics['customer_receivables'], $dp) }} {{ $sym }}</div>
         </div>
         <div class="bg-white rounded-2xl border border-rose-200 p-4">
             <div class="text-rose-700 font-semibold">علينا للموردين</div>
-            <div class="text-lg font-extrabold text-rose-800 mt-1">{{ number_format((float) $metrics['supplier_payables'], $dp) }} {{ $sym }}</div>
+            <div class="text-lg font-extrabold text-rose-800 mt-1">{{ format_money($metrics['supplier_payables'], $dp) }} {{ $sym }}</div>
         </div>
         <div class="bg-white rounded-2xl border border-amber-200 p-4">
             <div class="text-amber-700 font-semibold">سلف العمال هذا الشهر</div>
-            <div class="text-lg font-extrabold text-amber-800 mt-1">{{ number_format((float) $monthEmployeeAdvances, $dp) }} {{ $sym }}</div>
+            <div class="text-lg font-extrabold text-amber-800 mt-1">{{ format_money($monthEmployeeAdvances, $dp) }} {{ $sym }}</div>
         </div>
         <div class="bg-indigo-600 text-white rounded-2xl p-4">
             <div class="text-indigo-100 font-semibold">صافي الربح التراكمي</div>
-            <div class="text-lg font-extrabold mt-1">{{ number_format((float) $metrics['net_profit'], $dp) }} {{ $sym }}</div>
+            <div class="text-lg font-extrabold mt-1">{{ format_money($metrics['net_profit'], $dp) }} {{ $sym }}</div>
         </div>
     </div>
 
@@ -97,7 +97,7 @@
                 @forelse($lowStockProducts as $lp)
                 <div class="py-2 flex justify-between gap-2">
                     <span class="font-semibold text-slate-800 truncate">{{ $lp->name }}</span>
-                    <span class="text-amber-700 font-bold shrink-0">{{ $lp->quantity }} / {{ $lp->min_stock_alert }}</span>
+                    <span class="text-amber-700 font-bold shrink-0">{{ format_qty($lp->quantity) }} / {{ format_qty($lp->min_stock_alert) }}</span>
                 </div>
                 @empty
                 <p class="text-slate-400 py-3">جميع الأصناف متوفرة بكمية آمنة.</p>
@@ -115,7 +115,7 @@
                         <div class="font-semibold text-slate-800 truncate">{{ $na->product?->name }}</div>
                         <div class="text-[11px] text-slate-400">{{ $na->user?->name }}</div>
                     </div>
-                    <span class="text-rose-600 font-bold shrink-0">{{ $na->balance_after }}</span>
+                    <span class="text-rose-600 font-bold shrink-0">{{ format_qty($na->balance_after) }}</span>
                 </div>
                 @empty
                 <p class="text-slate-400 py-3">لا توجد تنبيهات مخزون سالب.</p>

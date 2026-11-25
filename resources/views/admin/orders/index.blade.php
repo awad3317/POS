@@ -29,8 +29,8 @@
                 </td>
                 <td class="p-3">{{ $o->customer?->name ?? 'عميل نقدي' }}</td>
                 <td class="p-3">{{ $o->user?->name }}</td>
-                <td class="p-3 font-bold">{{ number_format((float) $o->total_amount, $store->decimal_places) }} {{ $sym }}</td>
-                <td class="p-3">{{ number_format((float) $o->paid_amount, $store->decimal_places) }} / <span class="text-rose-600">{{ number_format((float) $o->credit_amount, $store->decimal_places) }}</span></td>
+                <td class="p-3 font-bold">{{ format_money($o->total_amount, $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3">{{ format_money($o->paid_amount, $store->decimal_places) }} / <span class="text-rose-600">{{ format_money($o->credit_amount, $store->decimal_places) }}</span></td>
                 <td class="p-3">{{ $o->sold_at?->format('Y-m-d H:i') }}</td>
                 <td class="p-3">
                     <a href="{{ route('orders.show', $o->id) }}" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-semibold">التفاصيل / مرتجع</a>

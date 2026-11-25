@@ -11,7 +11,10 @@
             return this.items.reduce((sum, i) => sum + ((parseFloat(i.quantity) || 0) * (parseFloat(i.unit_cost) || 0)), 0);
         },
         get total() { return Math.max(0, this.subtotal - (parseFloat(this.discountAmount) || 0)); },
-        get credit() { return Math.max(0, this.total - (parseFloat(this.paidAmount) || 0)); }
+        get credit() {
+            const val = Math.max(0, this.total - (parseFloat(this.paidAmount) || 0));
+            return Number.isInteger(val) ? val : parseFloat(val.toFixed(4));
+        }
      }">
 
     <form method="POST" action="{{ route('purchases.store') }}" class="space-y-4 text-xs">
@@ -54,8 +57,8 @@
                             <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->barcode }})</option>
                         @endforeach
                     </select>
-                    <input type="number" step="0.001" :name="`items[${idx}][quantity]`" x-model="row.quantity" placeholder="الكمية" class="border bg-white rounded-lg px-2 py-1.5">
-                    <input type="number" step="0.0001" :name="`items[${idx}][unit_cost]`" x-model="row.unit_cost" placeholder="سعر تكلفة الوحدة" class="border bg-white rounded-lg px-2 py-1.5">
+                    <input type="number" step="any" :name="`items[${idx}][quantity]`" x-model="row.quantity" placeholder="الكمية" class="border bg-white rounded-lg px-2 py-1.5">
+                    <input type="number" step="any" :name="`items[${idx}][unit_cost]`" x-model="row.unit_cost" placeholder="سعر تكلفة الوحدة" class="border bg-white rounded-lg px-2 py-1.5">
                 </div>
             </template>
         </div>
@@ -63,15 +66,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl">
             <div>
                 <label class="block font-semibold mb-1">خصم الفاتورة</label>
-                <input type="number" step="0.0001" name="discount_amount" x-model="discountAmount" class="w-full border bg-white rounded-lg px-3 py-1.5">
+                <input type="number" step="any" name="discount_amount" x-model="discountAmount" class="w-full border bg-white rounded-lg px-3 py-1.5">
             </div>
             <div>
                 <label class="block font-semibold mb-1">المدفوع الآن</label>
-                <input type="number" step="0.0001" name="paid_amount" x-model="paidAmount" class="w-full border bg-white rounded-lg px-3 py-1.5">
+                <input type="number" step="any" name="paid_amount" x-model="paidAmount" class="w-full border bg-white rounded-lg px-3 py-1.5">
             </div>
             <div>
                 <label class="block font-semibold mb-1">المتبقي آجل للمورد</label>
-                <input type="number" step="0.0001" name="credit_amount" :value="credit.toFixed(4)" readonly class="w-full border bg-slate-100 rounded-lg px-3 py-1.5 font-bold text-rose-600">
+                <input type="number" step="any" name="credit_amount" :value="credit" readonly class="w-full border bg-slate-100 rounded-lg px-3 py-1.5 font-bold text-rose-600">
             </div>
         </div>
 

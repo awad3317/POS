@@ -5,6 +5,23 @@
 @php
     $flags = $store->feature_flags ?? [];
     $isEdit = $product->exists;
+    $initialVariants = old('variants', $isEdit ? $product->variants->map(fn ($v) => [
+        'size' => $v->size,
+        'color' => $v->color,
+        'attribute_label' => $v->attribute_label,
+        'barcode' => $v->barcode,
+        'purchase_price' => format_input($v->purchase_price),
+        'sale_price' => format_input($v->sale_price),
+        'quantity' => format_qty($v->quantity),
+    ])->all() : []);
+    $initialUnits = old('units', $isEdit ? $product->units->map(fn ($u) => [
+        'unit_name' => $u->unit_name,
+        'conversion_factor' => format_qty($u->conversion_factor),
+        'barcode' => $u->barcode,
+        'purchase_price' => format_input($u->purchase_price),
+        'sale_price' => format_input($u->sale_price),
+        'is_default' => $u->is_default,
+    ])->all() : []);
 @endphp
 
 <div class="max-w-4xl bg-white rounded-2xl border border-slate-200 p-6"
@@ -15,8 +32,8 @@
         catalogMsg: '',
         sizesInput: '',
         colorsInput: '',
-        variants: @js(old('variants', $isEdit ? $product->variants->toArray() : [])),
-        units: @js(old('units', $isEdit ? $product->units->toArray() : [])),
+        variants: @js($initialVariants),
+        units: @js($initialUnits),
         async lookupBarcode() {
             if (!this.barcode) return;
             const res = await fetch(`{{ route('products.barcode-lookup') }}?barcode=${encodeURIComponent(this.barcode)}`);
@@ -72,12 +89,12 @@
             <div>
                 <label class="block text-xs font-semibold mb-1">نوع الصنف</label>
                 <select name="type" x-model="type" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm">
-                    <option value="simple">صنف عادي / وحدات</option>
+                    <option value="simple">عادي (حبة / وحدات)</option>
                     @if(!empty($flags['variants']) || $store->business_type === 'clothing')
-                        <option value="variant">متعدد المقاسات والألوان</option>
+                        <option value="variant">متغيرات (مقاسات وألوان)</option>
                     @endif
                     @if(!empty($flags['scale_plu']) || $store->business_type === 'grocery')
-                        <option value="weighted">صنف موزون بالميزان الإلكتروني</option>
+                        <option value="weighted">موزون (بالميزان الإلكتروني)</option>
                     @endif
                 </select>
             </div>
@@ -99,27 +116,27 @@
 
             <div>
                 <label class="block text-xs font-semibold mb-1">سعر الشراء الأساسي *</label>
-                <input type="number" step="0.0001" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}" required
+                <input type="number" step="any" name="purchase_price" value="{{ format_input(old('purchase_price', $product->purchase_price)) }}" required
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm">
             </div>
 
             <div>
                 <label class="block text-xs font-semibold mb-1">سعر البيع *</label>
-                <input type="number" step="0.0001" name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" required
+                <input type="number" step="any" name="sale_price" value="{{ format_input(old('sale_price', $product->sale_price)) }}" required
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm">
             </div>
 
             @if(!$isEdit)
             <div>
                 <label class="block text-xs font-semibold mb-1">الرصيد الافتتاحي</label>
-                <input type="number" step="0.001" name="quantity" value="{{ old('quantity', '0') }}"
+                <input type="number" step="any" name="quantity" value="{{ format_qty(old('quantity', '0')) }}"
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm">
             </div>
             @endif
 
             <div>
                 <label class="block text-xs font-semibold mb-1">حد تنبيه النواقص</label>
-                <input type="number" step="0.001" name="min_stock_alert" value="{{ old('min_stock_alert', $product->min_stock_alert) }}"
+                <input type="number" step="any" name="min_stock_alert" value="{{ format_qty(old('min_stock_alert', $product->min_stock_alert)) }}"
                        class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm">
             </div>
 
@@ -138,11 +155,11 @@
             </div>
             <div>
                 <label class="block text-xs font-semibold mb-1">تكلفة الشراء بالعملة الأجنبية</label>
-                <input type="number" step="0.0001" name="foreign_cost_price" value="{{ old('foreign_cost_price', $product->foreign_cost_price) }}" class="w-full border bg-white rounded-lg px-3 py-1.5 text-xs">
+                <input type="number" step="any" name="foreign_cost_price" value="{{ format_input(old('foreign_cost_price', $product->foreign_cost_price), true) }}" class="w-full border bg-white rounded-lg px-3 py-1.5 text-xs">
             </div>
             <div>
                 <label class="block text-xs font-semibold mb-1">نسبة هامش الربح التلقائي (%)</label>
-                <input type="number" step="0.01" name="profit_margin_percent" value="{{ old('profit_margin_percent', $product->profit_margin_percent) }}" class="w-full border bg-white rounded-lg px-3 py-1.5 text-xs">
+                <input type="number" step="any" name="profit_margin_percent" value="{{ format_input(old('profit_margin_percent', $product->profit_margin_percent), true) }}" class="w-full border bg-white rounded-lg px-3 py-1.5 text-xs">
             </div>
         </div>
         @endif
@@ -162,9 +179,9 @@
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-white p-2 rounded-lg border border-slate-200 text-xs">
                     <input type="text" :name="`variants[${idx}][attribute_label]`" x-model="v.attribute_label" placeholder="المقاس/اللون" class="border rounded px-2 py-1">
                     <input type="text" :name="`variants[${idx}][barcode]`" x-model="v.barcode" placeholder="باركود المتغير" class="border rounded px-2 py-1">
-                    <input type="number" step="0.0001" :name="`variants[${idx}][purchase_price]`" x-model="v.purchase_price" placeholder="الشراء" class="border rounded px-2 py-1">
-                    <input type="number" step="0.0001" :name="`variants[${idx}][sale_price]`" x-model="v.sale_price" placeholder="البيع" class="border rounded px-2 py-1">
-                    <input type="number" step="0.001" :name="`variants[${idx}][quantity]`" x-model="v.quantity" placeholder="الكمية" class="border rounded px-2 py-1">
+                    <input type="number" step="any" :name="`variants[${idx}][purchase_price]`" x-model="v.purchase_price" placeholder="الشراء" class="border rounded px-2 py-1">
+                    <input type="number" step="any" :name="`variants[${idx}][sale_price]`" x-model="v.sale_price" placeholder="البيع" class="border rounded px-2 py-1">
+                    <input type="number" step="any" :name="`variants[${idx}][quantity]`" x-model="v.quantity" placeholder="الكمية" class="border rounded px-2 py-1">
                 </div>
             </template>
         </div>
@@ -179,10 +196,10 @@
             <template x-for="(u, idx) in units" :key="idx">
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-white p-2 rounded-lg border border-slate-200 text-xs">
                     <input type="text" :name="`units[${idx}][unit_name]`" x-model="u.unit_name" placeholder="اسم الوحدة (كرتون)" class="border rounded px-2 py-1">
-                    <input type="number" step="0.001" :name="`units[${idx}][conversion_factor]`" x-model="u.conversion_factor" placeholder="عدد الحبات (24)" class="border rounded px-2 py-1">
+                    <input type="number" step="any" :name="`units[${idx}][conversion_factor]`" x-model="u.conversion_factor" placeholder="عدد الحبات (24)" class="border rounded px-2 py-1">
                     <input type="text" :name="`units[${idx}][barcode]`" x-model="u.barcode" placeholder="باركود الوحدة" class="border rounded px-2 py-1">
-                    <input type="number" step="0.0001" :name="`units[${idx}][purchase_price]`" x-model="u.purchase_price" placeholder="شراء الوحدة" class="border rounded px-2 py-1">
-                    <input type="number" step="0.0001" :name="`units[${idx}][sale_price]`" x-model="u.sale_price" placeholder="بيع الوحدة" class="border rounded px-2 py-1">
+                    <input type="number" step="any" :name="`units[${idx}][purchase_price]`" x-model="u.purchase_price" placeholder="شراء الوحدة" class="border rounded px-2 py-1">
+                    <input type="number" step="any" :name="`units[${idx}][sale_price]`" x-model="u.sale_price" placeholder="بيع الوحدة" class="border rounded px-2 py-1">
                 </div>
             </template>
         </div>

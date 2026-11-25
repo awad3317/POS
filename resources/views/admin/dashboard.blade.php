@@ -7,7 +7,7 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-2xl border border-slate-200 p-4">
         <div class="text-xs text-slate-500">مبيعات اليوم ({{ $todayOrdersCount }} فاتورة)</div>
-        <div class="text-2xl font-bold text-emerald-600 mt-1">{{ number_format((float) $todaySales, $store->decimal_places) }} {{ $sym }}</div>
+        <div class="text-2xl font-bold text-emerald-600 mt-1">{{ format_money($todaySales, $store->decimal_places) }} {{ $sym }}</div>
     </div>
     <div class="bg-white rounded-2xl border border-slate-200 p-4">
         <div class="text-xs text-slate-500">الورديات المفتوحة حالياً</div>
@@ -20,7 +20,7 @@
     @if($canViewProfit && $metrics)
     <div class="bg-white rounded-2xl border border-slate-200 p-4">
         <div class="text-xs text-slate-500">صافي الربح التراكمي</div>
-        <div class="text-2xl font-bold text-indigo-600 mt-1">{{ number_format((float) $metrics['net_profit'], $store->decimal_places) }} {{ $sym }}</div>
+        <div class="text-2xl font-bold text-indigo-600 mt-1">{{ format_money($metrics['net_profit'], $store->decimal_places) }} {{ $sym }}</div>
     </div>
     @endif
 </div>
@@ -31,23 +31,23 @@
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm">
         <div class="p-3 rounded-xl bg-slate-50">
             <div class="text-xs text-slate-500">النقد المتوقع في الأدراج</div>
-            <div class="font-bold mt-1">{{ number_format((float) $metrics['cash_in_drawers'], $store->decimal_places) }} {{ $sym }}</div>
+            <div class="font-bold mt-1">{{ format_money($metrics['cash_in_drawers'], $store->decimal_places) }} {{ $sym }}</div>
         </div>
         <div class="p-3 rounded-xl bg-emerald-50/60">
             <div class="text-xs text-emerald-700">لنا عند العملاء (ديون)</div>
-            <div class="font-bold text-emerald-800 mt-1">{{ number_format((float) $metrics['customer_receivables'], $store->decimal_places) }} {{ $sym }}</div>
+            <div class="font-bold text-emerald-800 mt-1">{{ format_money($metrics['customer_receivables'], $store->decimal_places) }} {{ $sym }}</div>
         </div>
         <div class="p-3 rounded-xl bg-rose-50/60">
             <div class="text-xs text-rose-700">علينا للموردين</div>
-            <div class="font-bold text-rose-800 mt-1">{{ number_format((float) $metrics['supplier_payables'], $store->decimal_places) }} {{ $sym }}</div>
+            <div class="font-bold text-rose-800 mt-1">{{ format_money($metrics['supplier_payables'], $store->decimal_places) }} {{ $sym }}</div>
         </div>
         <div class="p-3 rounded-xl bg-amber-50/60">
             <div class="text-xs text-amber-700">صافي مستحقات العمال</div>
-            <div class="font-bold text-amber-800 mt-1">{{ number_format((float) $metrics['employee_net_payables'], $store->decimal_places) }} {{ $sym }}</div>
+            <div class="font-bold text-amber-800 mt-1">{{ format_money($metrics['employee_net_payables'], $store->decimal_places) }} {{ $sym }}</div>
         </div>
         <div class="p-3 rounded-xl bg-slate-900 text-white col-span-2 lg:col-span-1">
             <div class="text-xs text-slate-300">صافي الموقف المالي</div>
-            <div class="font-bold mt-1">{{ number_format((float) $metrics['net_position'], $store->decimal_places) }} {{ $sym }}</div>
+            <div class="font-bold mt-1">{{ format_money($metrics['net_position'], $store->decimal_places) }} {{ $sym }}</div>
         </div>
     </div>
 </div>
@@ -75,7 +75,7 @@
                         <td class="p-2.5 font-semibold">{{ $sh->terminal?->name }}</td>
                         <td class="p-2.5">{{ $sh->user?->name }}</td>
                         <td class="p-2.5">{{ $sh->opened_at?->format('Y-m-d H:i') }}</td>
-                        <td class="p-2.5 font-bold text-emerald-700">{{ number_format((float) $sh->expected_cash, $store->decimal_places) }} {{ $sym }}</td>
+                        <td class="p-2.5 font-bold text-emerald-700">{{ format_money($sh->expected_cash, $store->decimal_places) }} {{ $sym }}</td>
                         <td class="p-2.5"><a href="{{ route('shifts.show', $sh->id) }}" class="text-emerald-600 font-semibold">عرض</a></td>
                     </tr>
                     @endforeach

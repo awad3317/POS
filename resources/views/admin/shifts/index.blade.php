@@ -17,7 +17,7 @@
         </div>
         <div>
             <label class="block font-semibold mb-1">عهدة بداية الوردية ({{ $sym }})</label>
-            <input type="number" step="0.0001" name="opening_cash" value="0" required class="border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="opening_cash" value="0" required class="border rounded-xl px-3 py-2">
         </div>
         <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold">فتح وردية جديدة</button>
     </form>
@@ -46,10 +46,10 @@
                         {{ $sh->status === 'open' ? 'مفتوحة' : 'مغلقة' }}
                     </span>
                 </td>
-                <td class="p-3 font-semibold">{{ number_format((float) $sh->expected_cash, $store->decimal_places) }} {{ $sym }}</td>
-                <td class="p-3">{{ $sh->actual_cash !== null ? number_format((float) $sh->actual_cash, $store->decimal_places) . ' ' . $sym : '—' }}</td>
-                <td class="p-3 font-bold {{ (float)($sh->difference ?? 0) < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                    {{ $sh->difference !== null ? number_format((float) $sh->difference, $store->decimal_places) . ' ' . $sym : '—' }}
+                <td class="p-3 font-semibold">{{ format_money($sh->expected_cash, $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3">{{ $sh->actual_cash !== null ? format_money($sh->actual_cash, $store->decimal_places) . ' ' . $sym : '—' }}</td>
+                <td class="p-3 font-bold {{ $sh->difference !== null && \App\Support\MoneyMath::isNegative($sh->difference) ? 'text-rose-600' : 'text-emerald-700' }}">
+                    {{ $sh->difference !== null ? format_money($sh->difference, $store->decimal_places) . ' ' . $sym : '—' }}
                 </td>
                 <td class="p-3"><a href="{{ route('shifts.show', $sh->id) }}" class="text-emerald-600 font-bold">عرض التقرير</a></td>
             </tr>

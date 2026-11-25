@@ -62,95 +62,173 @@ test('encrypted AES-256 backup archive creates, encrypts, rejects wrong password
     $tmpDir = storage_path('framework/testing/backup_restore_' . uniqid());
     File::ensureDirectoryExists($tmpDir);
 
-    $sourceSqlite = "{$tmpDir}/source.sqlite";
-    $restoredSqlite = "{$tmpDir}/restored.sqlite";
     $zipPath = "{$tmpDir}/yemen-pos-backup.zip";
     $password = 'YemenPos@Backup2026!';
 
     try {
-        touch($sourceSqlite);
+        if (extension_loaded('pdo_sqlite')) {
+            $sourceSqlite = "{$tmpDir}/source.sqlite";
+            $restoredSqlite = "{$tmpDir}/restored.sqlite";
+            touch($sourceSqlite);
 
-        // Configure isolated SQLite connection for clean end-to-end backup & restore drill
-        Config::set('database.connections.backup_test_src', [
-            'driver' => 'sqlite',
-            'database' => $sourceSqlite,
-            'prefix' => '',
-            'foreign_key_constraints' => true,
-        ]);
+            Config::set('database.connections.backup_test_src', [
+                'driver' => 'sqlite',
+                'database' => $sourceSqlite,
+                'prefix' => '',
+                'foreign_key_constraints' => true,
+            ]);
 
-        // Migrate and seed isolated source DB + create live order
-        $originalDefault = config('database.default');
-        Config::set('database.default', 'backup_test_src');
-        DB::purge('backup_test_src');
+            $originalDefault = config('database.default');
+            Config::set('database.default', 'backup_test_src');
+            DB::purge('backup_test_src');
 
-        Artisan::call('migrate', ['--database' => 'backup_test_src', '--force' => true]);
-        $this->seed(DemoStoresSeeder::class);
+            Artisan::call('migrate', ['--database' => 'backup_test_src', '--force' => true]);
+            $this->seed(DemoStoresSeeder::class);
 
-        $store = Store::where('slug', 'baqalat-alkhair')->firstOrFail();
-        $cashier = User::where('email', 'cashier@alkhair.ye')->firstOrFail();
-        $terminal = Terminal::forStore($store->id)->firstOrFail();
-        $rani = Product::forStore($store->id)->where('barcode', '6281007041126')->firstOrFail();
+            $store = Store::where('slug', 'baqalat-alkhair')->firstOrFail();
+            $cashier = User::where('email', 'cashier@alkhair.ye')->firstOrFail();
+            $terminal = Terminal::forStore($store->id)->firstOrFail();
+            $rani = Product::forStore($store->id)->where('barcode', '6281007041126')->firstOrFail();
 
-        $shift = app(ShiftService::class)->openShift(['terminal_id' => $terminal->id, 'opening_cash' => '25000.0000'], $cashier)['shift'];
-        $order = app(OrderService::class)->createSale([
-            'shift_id' => $shift->id,
-            'items' => [['product_id' => $rani->id, 'quantity' => '4.000']],
-            'payments' => [['method' => 'cash', 'amount' => '1200.0000']],
-        ], $cashier)['order'];
+            $shift = app(ShiftService::class)->openShift(['terminal_id' => $terminal->id, 'opening_cash' => '25000.0000'], $cashier)['shift'];
+            $order = app(OrderService::class)->createSale([
+                'shift_id' => $shift->id,
+                'items' => [['product_id' => $rani->id, 'quantity' => '4.000']],
+                'payments' => [['method' => 'cash', 'amount' => '1200.0000']],
+            ], $cashier)['order'];
 
-        $expectedInvoice = $order->invoice_number;
-        $expectedProductQty = $rani->fresh()->quantity; // 116.000
-        $expectedShiftCash = $shift->fresh()->expected_cash; // 26200.0000
+            $expectedInvoice = $order->invoice_number;
 
-        DB::disconnect('backup_test_src');
-        Config::set('database.default', $originalDefault);
+            DB::disconnect('backup_test_src');
+            Config::set('database.default', $originalDefault);
 
-        // 1. Create AES-256 encrypted ZIP backup archive (matching spatie/laravel-backup ZipArchive::EM_AES_256)
-        $zip = new ZipArchive();
-        expect($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE))->toBeTrue();
-        $zip->addFile($sourceSqlite, 'db-dumps/yemen-pos.sqlite');
-        $zip->setEncryptionName('db-dumps/yemen-pos.sqlite', ZipArchive::EM_AES_256, $password);
-        $zip->close();
+            $zip = new ZipArchive();
+            expect($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE))->toBeTrue();
+            $zip->addFile($sourceSqlite, 'db-dumps/yemen-pos.sqlite');
+            $zip->setEncryptionName('db-dumps/yemen-pos.sqlite', ZipArchive::EM_AES_256, $password);
+            $zip->close();
 
-        expect(File::exists($zipPath))->toBeTrue();
-        expect(File::size($zipPath))->toBeGreaterThan(1024);
+            expect(File::exists($zipPath))->toBeTrue();
+            expect(File::size($zipPath))->toBeGreaterThan(1024);
 
-        // 2. Verify wrong password CANNOT decrypt backup
-        $badZip = new ZipArchive();
-        expect($badZip->open($zipPath))->toBeTrue();
-        $badZip->setPassword('WrongPassword');
-        expect($badZip->getFromName('db-dumps/yemen-pos.sqlite'))->toBeFalse();
-        $badZip->close();
+            $badZip = new ZipArchive();
+            expect($badZip->open($zipPath))->toBeTrue();
+            $badZip->setPassword('WrongPassword');
+            expect($badZip->getFromName('db-dumps/yemen-pos.sqlite'))->toBeFalse();
+            $badZip->close();
 
-        // 3. Decrypt with valid password and restore to fresh target database
-        $goodZip = new ZipArchive();
-        expect($goodZip->open($zipPath))->toBeTrue();
-        $goodZip->setPassword($password);
-        $restoredBytes = $goodZip->getFromName('db-dumps/yemen-pos.sqlite');
-        $goodZip->close();
+            $goodZip = new ZipArchive();
+            expect($goodZip->open($zipPath))->toBeTrue();
+            $goodZip->setPassword($password);
+            $restoredBytes = $goodZip->getFromName('db-dumps/yemen-pos.sqlite');
+            $goodZip->close();
 
-        expect($restoredBytes)->not->toBeFalse();
-        File::put($restoredSqlite, $restoredBytes);
+            expect($restoredBytes)->not->toBeFalse();
+            File::put($restoredSqlite, $restoredBytes);
 
-        Config::set('database.connections.backup_test_dst', [
-            'driver' => 'sqlite',
-            'database' => $restoredSqlite,
-            'prefix' => '',
-            'foreign_key_constraints' => true,
-        ]);
-        DB::purge('backup_test_dst');
+            Config::set('database.connections.backup_test_dst', [
+                'driver' => 'sqlite',
+                'database' => $restoredSqlite,
+                'prefix' => '',
+                'foreign_key_constraints' => true,
+            ]);
+            DB::purge('backup_test_dst');
 
-        $restoredOrder = DB::connection('backup_test_dst')->table('orders')->where('invoice_number', $expectedInvoice)->first();
-        $restoredRani = DB::connection('backup_test_dst')->table('products')->where('barcode', '6281007041126')->first();
-        $restoredShift = DB::connection('backup_test_dst')->table('shifts')->where('id', $shift->id)->first();
+            $restoredOrder = DB::connection('backup_test_dst')->table('orders')->where('invoice_number', $expectedInvoice)->first();
+            $restoredRani = DB::connection('backup_test_dst')->table('products')->where('barcode', '6281007041126')->first();
+            $restoredShift = DB::connection('backup_test_dst')->table('shifts')->where('id', $shift->id)->first();
 
-        expect($restoredOrder)->not->toBeNull();
-        expect((string) $restoredOrder->total_amount)->toEqual('1200');
-        expect((string) $restoredRani->quantity)->toEqual('116');
-        expect((string) $restoredShift->expected_cash)->toEqual('26200');
-        expect(Schema::connection('backup_test_dst')->hasTable('stock_movements'))->toBeTrue();
+            expect($restoredOrder)->not->toBeNull();
+            expect(\App\Support\MoneyMath::cmp((string) $restoredOrder->total_amount, '1200'))->toBe(0);
+            expect(\App\Support\MoneyMath::cmp((string) $restoredRani->quantity, '116'))->toBe(0);
+            expect(\App\Support\MoneyMath::cmp((string) $restoredShift->expected_cash, '26200'))->toBe(0);
+            expect(Schema::connection('backup_test_dst')->hasTable('stock_movements'))->toBeTrue();
 
-        DB::disconnect('backup_test_dst');
+            DB::disconnect('backup_test_dst');
+        } else {
+            // MySQL backup & restore drill when pdo_sqlite is not installed on host PHP
+            $this->seed(DemoStoresSeeder::class);
+
+            $store = Store::where('slug', 'baqalat-alkhair')->firstOrFail();
+            $cashier = User::where('email', 'cashier@alkhair.ye')->firstOrFail();
+            $terminal = Terminal::forStore($store->id)->firstOrFail();
+            $rani = Product::forStore($store->id)->where('barcode', '6281007041126')->firstOrFail();
+
+            $shift = app(ShiftService::class)->openShift(['terminal_id' => $terminal->id, 'opening_cash' => '25000.0000'], $cashier)['shift'];
+            $order = app(OrderService::class)->createSale([
+                'shift_id' => $shift->id,
+                'items' => [['product_id' => $rani->id, 'quantity' => '4.000']],
+                'payments' => [['method' => 'cash', 'amount' => '1200.0000']],
+            ], $cashier)['order'];
+
+            $expectedInvoice = $order->invoice_number;
+            $pdo = DB::connection()->getPdo();
+            $tablesToBackup = ['products', 'shifts', 'orders', 'order_items', 'payments', 'stock_movements'];
+
+            $sqlLines = ['SET FOREIGN_KEY_CHECKS=0;'];
+            foreach ($tablesToBackup as $tbl) {
+                $sqlLines[] = "DELETE FROM `{$tbl}`;";
+                $rows = DB::table($tbl)->get();
+                foreach ($rows as $row) {
+                    $arr = (array) $row;
+                    $cols = implode(', ', array_map(fn ($c) => "`{$c}`", array_keys($arr)));
+                    $vals = implode(', ', array_map(
+                        fn ($v) => $v === null ? 'NULL' : $pdo->quote((string) $v),
+                        array_values($arr)
+                    ));
+                    $sqlLines[] = "INSERT INTO `{$tbl}` ({$cols}) VALUES ({$vals});";
+                }
+            }
+            $sqlLines[] = 'SET FOREIGN_KEY_CHECKS=1;';
+
+            $dumpPath = "{$tmpDir}/yemen-pos.sql";
+            File::put($dumpPath, implode("\n", $sqlLines));
+
+            // 1. Create AES-256 encrypted ZIP archive
+            $zip = new ZipArchive();
+            expect($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE))->toBeTrue();
+            $zip->addFile($dumpPath, 'db-dumps/yemen-pos.sql');
+            $zip->setEncryptionName('db-dumps/yemen-pos.sql', ZipArchive::EM_AES_256, $password);
+            $zip->close();
+
+            expect(File::exists($zipPath))->toBeTrue();
+            expect(File::size($zipPath))->toBeGreaterThan(512);
+
+            // 2. Verify wrong password CANNOT decrypt backup
+            $badZip = new ZipArchive();
+            expect($badZip->open($zipPath))->toBeTrue();
+            $badZip->setPassword('WrongPassword');
+            expect($badZip->getFromName('db-dumps/yemen-pos.sql'))->toBeFalse();
+            $badZip->close();
+
+            // 3. Simulate data loss, then decrypt with valid password and restore faithfully
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            foreach (array_reverse($tablesToBackup) as $tbl) {
+                DB::table($tbl)->delete();
+            }
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+            expect(DB::table('orders')->where('invoice_number', $expectedInvoice)->exists())->toBeFalse();
+
+            $goodZip = new ZipArchive();
+            expect($goodZip->open($zipPath))->toBeTrue();
+            $goodZip->setPassword($password);
+            $restoredSql = $goodZip->getFromName('db-dumps/yemen-pos.sql');
+            $goodZip->close();
+
+            expect($restoredSql)->not->toBeFalse();
+            DB::unprepared($restoredSql);
+
+            $restoredOrder = DB::table('orders')->where('invoice_number', $expectedInvoice)->first();
+            $restoredRani = DB::table('products')->where('barcode', '6281007041126')->first();
+            $restoredShift = DB::table('shifts')->where('id', $shift->id)->first();
+
+            expect($restoredOrder)->not->toBeNull();
+            expect(\App\Support\MoneyMath::cmp((string) $restoredOrder->total_amount, '1200'))->toBe(0);
+            expect(\App\Support\MoneyMath::cmp((string) $restoredRani->quantity, '116'))->toBe(0);
+            expect(\App\Support\MoneyMath::cmp((string) $restoredShift->expected_cash, '26200'))->toBe(0);
+            expect(Schema::hasTable('stock_movements'))->toBeTrue();
+        }
     } finally {
         File::deleteDirectory($tmpDir);
     }

@@ -72,15 +72,22 @@
                     </td>
                     <td class="p-3 text-slate-600">
                         <div>{{ $p->barcode ?? '—' }}</div>
-                        <div class="text-[11px] text-slate-400">{{ $p->type }} @if($p->scale_plu_code) | PLU: {{ $p->scale_plu_code }} @endif</div>
+                        <div class="mt-0.5 flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                                {{ product_type_label($p->type) }}
+                            </span>
+                            @if($p->scale_plu_code)
+                                <span class="text-[11px] text-slate-400">PLU: {{ $p->scale_plu_code }}</span>
+                            @endif
+                        </div>
                     </td>
                     <td class="p-3">{{ $p->category?->name ?? '—' }}</td>
                     @can('products.view_cost')
-                    <td class="p-3">{{ number_format((float) $p->purchase_price, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3">{{ format_money($p->purchase_price, $store->decimal_places) }} {{ $sym }}</td>
                     @endcan
-                    <td class="p-3 font-bold text-emerald-700">{{ number_format((float) $p->sale_price, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3 font-bold text-emerald-700">{{ format_money($p->sale_price, $store->decimal_places) }} {{ $sym }}</td>
                     <td class="p-3 font-bold {{ (float)$p->quantity <= (float)$p->min_stock_alert ? 'text-rose-600' : 'text-slate-800' }}">
-                        {{ $p->quantity }}
+                        {{ format_qty($p->quantity) }}
                     </td>
                     <td class="p-3 flex items-center gap-2">
                         <a href="{{ route('products.edit', $p->id) }}" class="text-emerald-600 font-semibold">تعديل</a>

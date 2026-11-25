@@ -6,8 +6,8 @@
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-2.5 text-xs">
-        الرصيد الافتتاحي: <strong>{{ $statement['opening_balance'] }} {{ $sym }}</strong> |
-        صافي الرصيد الحالي: <strong class="{{ (float)$statement['closing_balance'] < 0 ? 'text-rose-600' : 'text-emerald-700' }}">{{ $statement['closing_balance'] }} {{ $sym }}</strong>
+        الرصيد الافتتاحي: <strong>{{ format_money($statement['opening_balance'], $store->decimal_places) }} {{ $sym }}</strong> |
+        صافي الرصيد الحالي: <strong class="{{ \App\Support\MoneyMath::isNegative($statement['closing_balance']) ? 'text-rose-600' : 'text-emerald-700' }}">{{ format_money($statement['closing_balance'], $store->decimal_places) }} {{ $sym }}</strong>
     </div>
     <div class="flex gap-2">
         <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">إرسال كشف الراتب عبر واتساب</a>
@@ -33,8 +33,8 @@
                 <td class="p-3">{{ $row['date'] }}</td>
                 <td class="p-3">{{ $row['type'] }}</td>
                 <td class="p-3">{{ $row['payment_source'] ?? 'قيد محاسبي' }}</td>
-                <td class="p-3 font-semibold {{ (float)$row['signed_amount'] < 0 ? 'text-rose-600' : 'text-emerald-700' }}">{{ $row['signed_amount'] }} {{ $sym }}</td>
-                <td class="p-3 font-bold">{{ $row['running_balance'] }} {{ $sym }}</td>
+                <td class="p-3 font-semibold {{ \App\Support\MoneyMath::isNegative($row['signed_amount']) ? 'text-rose-600' : 'text-emerald-700' }}">{{ format_money($row['signed_amount'], $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3 font-bold">{{ format_money($row['running_balance'], $store->decimal_places) }} {{ $sym }}</td>
                 <td class="p-3 text-slate-500">{{ $row['notes'] }}</td>
             </tr>
             @empty

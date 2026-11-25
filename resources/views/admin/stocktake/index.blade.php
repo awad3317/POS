@@ -11,7 +11,7 @@
                 <label class="block font-semibold mb-1">الصنف *</label>
                 <select name="product_id" required class="w-full border rounded-xl px-3 py-2">
                     @foreach($products as $p)
-                        <option value="{{ $p->id }}">{{ $p->name }} (الحالي: {{ $p->quantity }})</option>
+                        <option value="{{ $p->id }}">{{ $p->name }} (الحالي: {{ format_qty($p->quantity) }})</option>
                     @endforeach
                 </select>
             </div>
@@ -25,7 +25,7 @@
             </div>
             <div>
                 <label class="block font-semibold mb-1">الكمية *</label>
-                <input type="number" step="0.001" name="quantity" required class="w-full border rounded-xl px-3 py-2">
+                <input type="number" step="any" name="quantity" required class="w-full border rounded-xl px-3 py-2">
             </div>
             <div>
                 <label class="block font-semibold mb-1">سبب التسوية / ملاحظة</label>
@@ -53,8 +53,8 @@
                     <tr>
                         <td class="p-2.5 font-semibold"><a href="{{ route('products.stock-card', $m->product_id) }}" class="underline">{{ $m->product?->name }}</a></td>
                         <td class="p-2.5">{{ $m->type }}</td>
-                        <td class="p-2.5 font-bold {{ (float)$m->quantity_delta < 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ $m->quantity_delta }}</td>
-                        <td class="p-2.5 font-bold">{{ $m->balance_after }}</td>
+                        <td class="p-2.5 font-bold {{ (float)$m->quantity_delta < 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ format_qty($m->quantity_delta) }}</td>
+                        <td class="p-2.5 font-bold">{{ format_qty($m->balance_after) }}</td>
                         <td class="p-2.5 text-slate-500">{{ $m->user?->name }}</td>
                     </tr>
                     @endforeach

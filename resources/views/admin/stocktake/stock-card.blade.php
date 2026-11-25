@@ -3,8 +3,8 @@
 @section('header', 'كرت حركة الصنف: ' . $product->name)
 @section('content')
 <div class="mb-4 bg-white rounded-xl border border-slate-200 px-4 py-3 text-xs flex justify-between">
-    <span>الباركود: <strong>{{ $product->barcode ?? '—' }}</strong></span>
-    <span>الرصيد الحالي المعتمد: <strong class="text-emerald-700 text-sm">{{ $product->quantity }}</strong></span>
+    <span>الباركود: <strong>{{ $product->barcode ?? '—' }}</strong> | النوع: <strong>{{ product_type_label($product->type) }}</strong></span>
+    <span>الرصيد الحالي المعتمد: <strong class="text-emerald-700 text-sm">{{ format_qty($product->quantity) }}</strong></span>
 </div>
 
 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -24,9 +24,9 @@
             <tr>
                 <td class="p-3">{{ $mv->created_at?->format('Y-m-d H:i') }}</td>
                 <td class="p-3">{{ $mv->type }} @if($mv->is_negative_alert) <span class="text-rose-600 font-bold">(تنبيه سالب)</span> @endif</td>
-                <td class="p-3">{{ $mv->balance_before }}</td>
-                <td class="p-3 font-bold">{{ $mv->quantity_delta }}</td>
-                <td class="p-3 font-bold">{{ $mv->balance_after }}</td>
+                <td class="p-3">{{ format_qty($mv->balance_before) }}</td>
+                <td class="p-3 font-bold">{{ format_qty($mv->quantity_delta) }}</td>
+                <td class="p-3 font-bold">{{ format_qty($mv->balance_after) }}</td>
                 <td class="p-3 text-slate-500">{{ $mv->note }}</td>
             </tr>
             @endforeach

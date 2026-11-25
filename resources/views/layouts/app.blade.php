@@ -129,7 +129,7 @@
             <div class="flex items-center gap-2.5 flex-wrap">
                 @if($currentStore?->secondary_currency_code && $currentStore?->exchange_rate)
                     <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold">
-                        1 {{ $currentStore->secondary_currency_code }} = {{ number_format((float) $currentStore->exchange_rate, 0) }} {{ $currency }}
+                        1 {{ $currentStore->secondary_currency_code }} = {{ format_money($currentStore->exchange_rate) }} {{ $currency }}
                     </span>
                 @endif
 

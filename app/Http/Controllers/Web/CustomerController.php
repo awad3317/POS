@@ -149,10 +149,7 @@ class CustomerController extends Controller
         }
         unset($ev);
 
-        $whatsappUrl = WhatsAppLink::build(
-            $customer->whatsapp ?: $customer->phone,
-            "عزيزنا العميل / {$customer->name}\nتحية طيبة من {$store->name}\nنود تذكيركم بأن الرصيد المستحق في حسابكم هو: {$customer->current_balance} {$store->currency_symbol}.\nشكراً لتعاملكم معنا."
-        );
+        $whatsappUrl = WhatsAppLink::forCustomerDebt($customer, $store);
 
         return view('admin.customers.statement', compact('store', 'customer', 'events', 'whatsappUrl'));
     }

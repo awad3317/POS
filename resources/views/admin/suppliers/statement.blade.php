@@ -6,8 +6,8 @@
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-2.5 text-xs">
-        الرصيد الافتتاحي: <strong>{{ $statement['opening_balance'] }} {{ $sym }}</strong> |
-        الرصيد الختامي المستحق: <strong class="text-rose-600">{{ $statement['closing_balance'] }} {{ $sym }}</strong>
+        الرصيد الافتتاحي: <strong>{{ format_money($statement['opening_balance'], $store->decimal_places) }} {{ $sym }}</strong> |
+        الرصيد الختامي المستحق: <strong class="text-rose-600">{{ format_money($statement['closing_balance'], $store->decimal_places) }} {{ $sym }}</strong>
     </div>
     <div class="flex gap-2">
         <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">إرسال إشعار واتساب</a>
@@ -32,8 +32,8 @@
                 <td class="p-3">{{ $row['date'] }}</td>
                 <td class="p-3">{{ $row['type'] }}</td>
                 <td class="p-3">{{ $row['reference'] }}</td>
-                <td class="p-3 font-semibold">{{ $row['signed_amount'] }} {{ $sym }}</td>
-                <td class="p-3 font-bold">{{ $row['running_balance'] }} {{ $sym }}</td>
+                <td class="p-3 font-semibold">{{ format_money($row['signed_amount'], $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3 font-bold">{{ format_money($row['running_balance'], $store->decimal_places) }} {{ $sym }}</td>
             </tr>
             @empty
             <tr><td colspan="5" class="p-6 text-center text-slate-400">لا توجد حركات مسجلة في هذه الفترة.</td></tr>

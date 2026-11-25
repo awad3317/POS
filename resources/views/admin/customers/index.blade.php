@@ -6,7 +6,7 @@
 
 <div class="flex flex-wrap items-center justify-between gap-3 mb-4" x-data="{ addCust: false, settleCust: null }">
     <div class="bg-white rounded-xl border border-slate-200 px-4 py-2.5 text-xs">
-        إجمالي الديون المستحقة عند العملاء: <span class="font-bold text-emerald-700 text-sm">{{ number_format((float) $totalReceivables, $store->decimal_places) }} {{ $sym }}</span>
+        إجمالي الديون المستحقة عند العملاء: <span class="font-bold text-emerald-700 text-sm">{{ format_money($totalReceivables, $store->decimal_places) }} {{ $sym }}</span>
     </div>
 
     <div class="flex gap-2">
@@ -33,9 +33,9 @@
                 <tr>
                     <td class="p-3 font-semibold">{{ $c->name }}</td>
                     <td class="p-3">{{ $c->phone ?? '—' }}</td>
-                    <td class="p-3">{{ number_format((float) $c->credit_limit, $store->decimal_places) }} {{ $sym }}</td>
-                    <td class="p-3 font-bold {{ (float)$c->current_balance > 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                        {{ number_format((float) $c->current_balance, $store->decimal_places) }} {{ $sym }}
+                    <td class="p-3">{{ format_money($c->credit_limit, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3 font-bold {{ \App\Support\MoneyMath::isPositive($c->current_balance) ? 'text-rose-600' : 'text-emerald-700' }}">
+                        {{ format_money($c->current_balance, $store->decimal_places) }} {{ $sym }}
                     </td>
                     <td class="p-3 flex items-center gap-2">
                         <button type="button" @click="settleCust = { id: {{ $c->id }}, name: '{{ addslashes($c->name) }}' }"
@@ -60,8 +60,8 @@
             <h3 class="font-bold text-sm">إضافة عميل جديد</h3>
             <input type="text" name="name" required placeholder="اسم العميل *" class="w-full border rounded-xl px-3 py-2">
             <input type="text" name="phone" placeholder="رقم الهاتف / واتساب" class="w-full border rounded-xl px-3 py-2">
-            <input type="number" step="0.0001" name="credit_limit" value="50000" placeholder="السقف الائتماني المسموح" class="w-full border rounded-xl px-3 py-2">
-            <input type="number" step="0.0001" name="opening_balance" value="0" placeholder="رصيد دين افتتاحي سابق" class="w-full border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="credit_limit" value="50000" placeholder="السقف الائتماني المسموح" class="w-full border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="opening_balance" value="0" placeholder="رصيد دين افتتاحي سابق" class="w-full border rounded-xl px-3 py-2">
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="addCust = false" class="px-3 py-1.5 border rounded-lg">إلغاء</button>
                 <button type="submit" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg font-bold">حفظ العميل</button>
@@ -74,7 +74,7 @@
         <form method="POST" :action="`/customers/${settleCust?.id}/settlements`" @click.outside="settleCust = null" class="bg-white rounded-2xl max-w-md w-full p-6 space-y-3 text-xs">
             @csrf
             <h3 class="font-bold text-sm">سند قبض تسديد دين: <span x-text="settleCust?.name"></span></h3>
-            <input type="number" step="0.0001" name="amount" required placeholder="المبلغ المستلم *" class="w-full border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="amount" required placeholder="المبلغ المستلم *" class="w-full border rounded-xl px-3 py-2">
             <select name="method" class="w-full border rounded-xl px-3 py-2">
                 <option value="cash">نقدي (يدخل درج الوردية)</option>
                 <option value="kuraimi">الكريمي</option>

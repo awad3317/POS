@@ -62,7 +62,7 @@
             <h3 class="font-bold text-sm mb-2 text-amber-800">أداة تحديث سعر الصرف الفوري</h3>
             <form method="POST" action="{{ route('settings.exchange-rate') }}" class="flex gap-2">
                 @csrf
-                <input type="number" step="0.0001" name="exchange_rate" value="{{ $store->exchange_rate }}" required placeholder="سعر الصرف الجديد" class="border rounded-xl px-3 py-2 flex-1">
+                <input type="number" step="any" name="exchange_rate" value="{{ format_input($store->exchange_rate, true) }}" required placeholder="سعر الصرف الجديد" class="border rounded-xl px-3 py-2 flex-1">
                 <button type="submit" class="px-4 py-2 rounded-xl bg-amber-600 text-white font-bold">تحديث وإعادة التسعير</button>
             </form>
         </div>

@@ -331,3 +331,42 @@ test('end-to-end admin financial workflows execute accurately via Phase 2 servic
     expect($clothingTerminal->fresh()->is_active)->toBeFalse();
     expect(PersonalAccessToken::find($tokenId))->toBeNull();
 });
+
+test('UI formatting helpers trim trailing zeros on quantities, money inputs, and render Arabic product type badges', function () {
+    $this->seed(DemoStoresSeeder::class);
+
+    expect(\App\Support\MoneyMath::formatQty('20.000'))->toBe('20');
+    expect(\App\Support\MoneyMath::formatQty('2.500'))->toBe('2.5');
+    expect(\App\Support\MoneyMath::formatQty('0.375'))->toBe('0.375');
+    expect(\App\Support\MoneyMath::formatMoney('7000.0000', 0))->toBe('7,000');
+    expect(\App\Support\MoneyMath::formatMoney('7000.0000', 2))->toBe('7,000.00');
+    expect(\App\Support\MoneyMath::formatMoney('7000.0000', null, true))->toBe('7000');
+    expect(\App\Support\MoneyMath::formatInput('0.0000'))->toBe('0');
+
+    // Grocery store: simple ('عادي') and weighted ('موزون') products, clean stock & input values
+    $groceryOwner = User::where('email', 'owner@alkhair.ye')->firstOrFail();
+    $groceryStore = Store::where('slug', 'baqalat-alkhair')->firstOrFail();
+    $rani = Product::forStore($groceryStore->id)->where('barcode', '6281007041126')->firstOrFail();
+
+    $productsHtml = $this->actingAs($groceryOwner)->get('/products')->assertOk()->getContent();
+    expect($productsHtml)
+        ->toContain('عادي')
+        ->toContain('موزون')
+        ->toContain('18.5')
+        ->toContain('5,000')
+        ->not->toContain('120.000')
+        ->not->toContain('18.500')
+        ->not->toContain('5000.0000');
+
+    $editHtml = $this->actingAs($groceryOwner)->get("/products/{$rani->id}/edit")->assertOk()->getContent();
+    expect($editHtml)
+        ->toContain('value="250"')
+        ->toContain('value="300"')
+        ->not->toContain('value="250.0000"')
+        ->not->toContain('value="300.0000"');
+
+    // Clothing store: variant ('متغيرات') badge
+    $clothingOwner = User::where('email', 'owner@anaqa.ye')->firstOrFail();
+    $clothingProductsHtml = $this->actingAs($clothingOwner)->get('/products')->assertOk()->getContent();
+    expect($clothingProductsHtml)->toContain('متغيرات');
+});

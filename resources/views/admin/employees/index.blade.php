@@ -34,10 +34,10 @@
                             <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px]">بدون دخول نظام</span>
                         @endif
                     </td>
-                    <td class="p-3">{{ $emp->job_title ?? 'عامل' }} ({{ number_format((float) $emp->base_salary, $store->decimal_places) }} {{ $sym }} / {{ $emp->salary_type }})</td>
-                    <td class="p-3 text-amber-700 font-semibold">{{ number_format((float) ($emp->month_advances ?? 0), $store->decimal_places) }} {{ $sym }}</td>
-                    <td class="p-3 font-bold {{ (float)$emp->current_balance < 0 ? 'text-rose-600' : 'text-emerald-700' }}">
-                        {{ number_format((float) $emp->current_balance, $store->decimal_places) }} {{ $sym }}
+                    <td class="p-3">{{ $emp->job_title ?? 'عامل' }} ({{ format_money($emp->base_salary, $store->decimal_places) }} {{ $sym }} / {{ $emp->salary_type }})</td>
+                    <td class="p-3 text-amber-700 font-semibold">{{ format_money($emp->month_advances ?? 0, $store->decimal_places) }} {{ $sym }}</td>
+                    <td class="p-3 font-bold {{ \App\Support\MoneyMath::isNegative($emp->current_balance) ? 'text-rose-600' : 'text-emerald-700' }}">
+                        {{ format_money($emp->current_balance, $store->decimal_places) }} {{ $sym }}
                     </td>
                     <td class="p-3 flex items-center gap-2">
                         <button type="button" @click="txEmp = { id: {{ $emp->id }}, name: '{{ addslashes($emp->name) }}' }"
@@ -75,7 +75,7 @@
                     <option value="daily">أجر يومي</option>
                     <option value="commission_only">عمولة فقط</option>
                 </select>
-                <input type="number" step="0.0001" name="base_salary" value="0" required placeholder="الراتب الأساسي" class="border rounded-xl px-3 py-2">
+                <input type="number" step="any" name="base_salary" value="0" required placeholder="الراتب الأساسي" class="border rounded-xl px-3 py-2">
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" @click="addEmp = false" class="px-3 py-1.5 border rounded-lg">إلغاء</button>
@@ -95,7 +95,7 @@
                 <option value="bonus">حافز / مكافأة (+)</option>
                 <option value="deduction">خصم غياب / إتلاف (-)</option>
             </select>
-            <input type="number" step="0.0001" name="amount" required placeholder="المبلغ *" class="w-full border rounded-xl px-3 py-2">
+            <input type="number" step="any" name="amount" required placeholder="المبلغ *" class="w-full border rounded-xl px-3 py-2">
             <select name="payment_source" class="w-full border rounded-xl px-3 py-2">
                 <option value="owner_pocket">من جيب المالك / الإدارة</option>
                 <option value="cash_drawer">من درج الكاشير المفتوح</option>

@@ -27,9 +27,9 @@
                 <td class="p-3 font-semibold">{{ $p->reference_number }}</td>
                 <td class="p-3">{{ $p->type === 'purchase' ? 'فاتورة شراء' : 'مرتجع شراء' }}</td>
                 <td class="p-3">{{ $p->supplier?->name ?? 'نقدي مباشر' }}</td>
-                <td class="p-3 font-bold">{{ number_format((float) $p->total_amount, $store->decimal_places) }} {{ $sym }}</td>
-                <td class="p-3 text-emerald-700">{{ number_format((float) $p->paid_amount, $store->decimal_places) }} {{ $sym }}</td>
-                <td class="p-3 text-rose-600">{{ number_format((float) $p->credit_amount, $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3 font-bold">{{ format_money($p->total_amount, $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3 text-emerald-700">{{ format_money($p->paid_amount, $store->decimal_places) }} {{ $sym }}</td>
+                <td class="p-3 text-rose-600">{{ format_money($p->credit_amount, $store->decimal_places) }} {{ $sym }}</td>
                 <td class="p-3">{{ $p->purchased_at?->format('Y-m-d H:i') }}</td>
             </tr>
             @empty
