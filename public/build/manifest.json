@@ -1,0 +1,44 @@
+{
+  "_module.esm-kwW7fiIL.js": {
+    "file": "assets/module.esm-kwW7fiIL.js",
+    "name": "module.esm"
+  },
+  "_pos-print-BoCDDSly.js": {
+    "file": "assets/pos-print-BoCDDSly.js",
+    "name": "pos-print"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-Ba264-QN.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-y7nQfjaS.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_module.esm-kwW7fiIL.js"
+    ]
+  },
+  "resources/js/barcodes.js": {
+    "file": "assets/barcodes-CCNU_zj3.js",
+    "name": "barcodes",
+    "src": "resources/js/barcodes.js",
+    "isEntry": true,
+    "imports": [
+      "_module.esm-kwW7fiIL.js",
+      "_pos-print-BoCDDSly.js"
+    ]
+  },
+  "resources/js/pos.js": {
+    "file": "assets/pos-BsJ7ZsaE.js",
+    "name": "pos",
+    "src": "resources/js/pos.js",
+    "isEntry": true,
+    "imports": [
+      "_module.esm-kwW7fiIL.js",
+      "_pos-print-BoCDDSly.js"
+    ]
+  }
+}
