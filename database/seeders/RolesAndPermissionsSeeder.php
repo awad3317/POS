@@ -34,6 +34,8 @@ class RolesAndPermissionsSeeder extends Seeder
             ]);
         }
 
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+
         $owner = Role::firstOrCreate(['name' => 'owner', 'guard_name' => 'web']);
         $owner->syncPermissions($permissions);
 

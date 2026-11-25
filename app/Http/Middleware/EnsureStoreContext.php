@@ -24,11 +24,11 @@ class EnsureStoreContext
         $user->loadMissing(['store', 'roles.permissions', 'permissions']);
         $store = $user->store ?? Store::query()->find($user->store_id);
 
-        if (! $store || $store->subscription_status === 'suspended') {
+        if (! $store || $store->isSubscriptionBlocked()) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Store account is suspended or unavailable.'], 403);
+                return response()->json(['message' => Store::SUBSCRIPTION_BLOCKED_MESSAGE], 403);
             }
-            abort(403, 'حساب المتجر موقوف حالياً.');
+            abort(403, Store::SUBSCRIPTION_BLOCKED_MESSAGE);
         }
 
         StoreContext::set((int) $store->id);

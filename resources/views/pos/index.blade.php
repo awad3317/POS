@@ -12,7 +12,9 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
-                navigator.serviceWorker.register('/sw.js').catch(function () {});
+                navigator.serviceWorker.register('/sw.js').then(function (reg) {
+                    reg.update().catch(function () {});
+                }).catch(function () {});
             });
         }
     </script>
@@ -389,7 +391,10 @@
                                 <div class="flex items-center gap-1">
                                     <button type="button" @click.stop="adjustLineQty(idx, -1)"
                                             class="w-7 h-7 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-bold">-</button>
-                                    <input type="number" step="any" min="0.001" x-model="line.quantity" @change="line.quantity = formatInputQty(line.quantity)" @click.stop
+                                    <input type="number" step="any" min="0.001" x-model="line.quantity"
+                                           @blur="line.quantity = formatInputQty(line.quantity || '1')"
+                                           @change="line.quantity = formatInputQty(line.quantity || '1')"
+                                           @click.stop
                                            class="w-20 text-center rounded-lg border border-slate-300 py-1 font-bold text-xs bg-white">
                                     <button type="button" @click.stop="adjustLineQty(idx, 1)"
                                             class="w-7 h-7 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-bold">+</button>
@@ -397,7 +402,10 @@
 
                                 <div class="flex items-center gap-1">
                                     <span class="text-[11px] text-slate-500">خصم الصنف:</span>
-                                    <input type="number" step="any" min="0" x-model="line.discount_amount" @change="line.discount_amount = formatInputMoney(line.discount_amount)" @click.stop
+                                    <input type="number" step="any" min="0" x-model="line.discount_amount"
+                                           @blur="line.discount_amount = formatInputMoney(line.discount_amount || '0')"
+                                           @change="line.discount_amount = formatInputMoney(line.discount_amount || '0')"
+                                           @click.stop
                                            class="w-20 text-center rounded-lg border border-slate-300 py-1 text-xs bg-white">
                                 </div>
                             </div>

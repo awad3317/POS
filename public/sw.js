@@ -1,5 +1,6 @@
-const STATIC_CACHE = 'yemen-pos-static-v1';
-const PAGE_CACHE = 'yemen-pos-pages-v1';
+const CACHE_NAME = 'yemen-pos-v2';
+const STATIC_CACHE = `${CACHE_NAME}-static`;
+const PAGE_CACHE = `${CACHE_NAME}-pages`;
 
 const PRECACHE_URLS = [
     '/manifest.json',
@@ -23,6 +24,14 @@ function isStaticAssetPath(pathname) {
         || pathname.startsWith('/icons/')
         || pathname.startsWith('/img/')
         || pathname === '/manifest.json';
+}
+
+function isHtmlNavigationRequest(request, pathname) {
+    if (request.mode === 'navigate' || pathname === '/pos') {
+        return true;
+    }
+    const accept = request.headers.get('accept') || '';
+    return accept.includes('text/html');
 }
 
 self.addEventListener('install', (event) => {
@@ -90,7 +99,7 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 2. Cache-First: Static assets (/build/*, /fonts/*, icons, manifest)
+    // 2. Cache-First: Immutable hashed static assets (/build/*, /fonts/*, icons, manifest)
     if (isStaticAssetPath(url.pathname)) {
         event.respondWith((async () => {
             const cache = await caches.open(STATIC_CACHE);
@@ -107,35 +116,31 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 3. Stale-While-Revalidate: /pos application shell
-    if (url.pathname === '/pos') {
+    // 3. Network-First (with offline cache fallback): HTML navigation requests including /pos
+    if (isHtmlNavigationRequest(request, url.pathname)) {
         event.respondWith((async () => {
             const cache = await caches.open(PAGE_CACHE);
-            const cached = await cache.match('/pos');
-
-            const fetchPromise = fetch(request)
-                .then((networkRes) => {
-                    if (networkRes && networkRes.ok && !networkRes.redirected && networkRes.type === 'basic') {
+            try {
+                const networkRes = await fetch(request);
+                if (networkRes && networkRes.ok && !networkRes.redirected && networkRes.type === 'basic') {
+                    cache.put(request, networkRes.clone());
+                    if (url.pathname === '/pos') {
                         cache.put('/pos', networkRes.clone());
                     }
-                    return networkRes;
-                })
-                .catch(() => null);
-
-            if (cached) {
-                event.waitUntil(fetchPromise);
-                return cached;
-            }
-
-            const networkRes = await fetchPromise;
-            if (networkRes) {
+                }
                 return networkRes;
-            }
+            } catch {
+                const cached = (await cache.match(request))
+                    || (url.pathname === '/pos' ? await cache.match('/pos') : null);
+                if (cached) {
+                    return cached;
+                }
 
-            return new Response(
-                '<!DOCTYPE html><html lang="ar" dir="rtl"><meta charset="utf-8"><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>تعذر فتح الكاشير أوفلاين</h2><p>يرجى فتح /pos مرة واحدة أثناء توفر الإنترنت لتخزين الصفحة محلياً.</p></body></html>',
-                { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
-            );
+                return new Response(
+                    '<!DOCTYPE html><html lang="ar" dir="rtl"><meta charset="utf-8"><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>تعذر فتح الكاشير أوفلاين</h2><p>يرجى فتح /pos مرة واحدة أثناء توفر الإنترنت لتخزين الصفحة محلياً.</p></body></html>',
+                    { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+                );
+            }
         })());
     }
 });

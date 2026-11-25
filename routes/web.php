@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SuperAdmin\StoreManagementController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\BarcodeController;
 use App\Http\Controllers\Web\CustomerController;
@@ -24,6 +25,17 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:15,1')->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::prefix('super-admin')
+    ->name('super-admin.')
+    ->middleware(['auth', 'super_admin'])
+    ->group(function (): void {
+        Route::get('/', [StoreManagementController::class, 'index'])->name('index');
+        Route::post('/stores', [StoreManagementController::class, 'store'])->name('stores.store');
+        Route::post('/stores/{store}/toggle-status', [StoreManagementController::class, 'toggleStatus'])->name('stores.toggle-status');
+        Route::post('/stores/{store}/extend-subscription', [StoreManagementController::class, 'extendSubscription'])->name('stores.extend-subscription');
+        Route::post('/stores/{store}/reset-owner-password', [StoreManagementController::class, 'resetOwnerPassword'])->name('stores.reset-owner-password');
+    });
 
 Route::middleware(['auth', 'store.context'])->group(function (): void {
     // 60-Second Onboarding Wizard

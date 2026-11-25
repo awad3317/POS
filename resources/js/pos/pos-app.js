@@ -662,7 +662,7 @@ export function createPosApp(bootConfig = {}) {
                         product,
                         variant: pVars[0],
                         unit: null,
-                        quantity: '1.000',
+                        quantity: '1',
                         unitPrice: toMoney(pVars[0].sale_price ?? product.sale_price),
                         conversionFactor: '1.000',
                         barcode: pVars[0].barcode || product.barcode,
@@ -684,11 +684,20 @@ export function createPosApp(bootConfig = {}) {
                 product,
                 variant: null,
                 unit: defaultUnit,
-                quantity: '1.000',
+                quantity: '1',
                 unitPrice: toMoney(defaultUnit?.sale_price ?? product.sale_price),
                 conversionFactor: toQty(defaultUnit?.conversion_factor ?? '1.000'),
                 barcode: defaultUnit?.barcode || product.barcode,
             });
+        },
+
+        addToCart(product) {
+            this.selectProductFromGrid(product);
+        },
+
+        addScannedItem(rawBarcode) {
+            this.barcodeInput = String(rawBarcode ?? '').trim();
+            this.handleBarcodeSubmit();
         },
 
         pickVariantForCart(variant) {
@@ -701,7 +710,7 @@ export function createPosApp(bootConfig = {}) {
                 product,
                 variant,
                 unit: null,
-                quantity: '1.000',
+                quantity: '1',
                 unitPrice: toMoney(variant.sale_price ?? product.sale_price),
                 conversionFactor: '1.000',
                 barcode: variant.barcode || product.barcode,
@@ -734,10 +743,11 @@ export function createPosApp(bootConfig = {}) {
             if (existingIdx >= 0) {
                 const existing = this.cart[existingIdx];
                 const newQty = new PosDecimal(toQty(existing.quantity))
-                    .add(new PosDecimal(toQty(res.quantity || '1.000')))
+                    .add(new PosDecimal(toQty(res.quantity || '1')))
                     .toDecimalPlaces(3, PosDecimal.ROUND_HALF_UP)
                     .toFixed(3);
                 existing.quantity = this.formatInputQty(newQty);
+                existing.discount_amount = this.formatInputMoney(existing.discount_amount ?? '0');
                 this.selectedLineIndex = existingIdx;
             } else {
                 this.cart.push({
@@ -749,7 +759,7 @@ export function createPosApp(bootConfig = {}) {
                     barcode_snapshot: res.barcode || variant?.barcode || unit?.barcode || product.barcode || null,
                     unit_name_snapshot: unit?.unit_name || (product.type === 'weighted' ? 'كجم' : 'حبة'),
                     conversion_factor: toQty(res.conversionFactor || unit?.conversion_factor || '1.000'),
-                    quantity: this.formatInputQty(res.quantity || '1.000'),
+                    quantity: this.formatInputQty(res.quantity || '1'),
                     unit_price: toMoney(res.unitPrice ?? unit?.sale_price ?? variant?.sale_price ?? product.sale_price ?? '0'),
                     discount_amount: this.formatInputMoney('0'),
                     tax_rate: product.tax_rate ?? '0.00',
@@ -786,6 +796,8 @@ export function createPosApp(bootConfig = {}) {
                 line.unit_price = toMoney(product.sale_price);
                 line.unit_min_cost = null;
             }
+            line.quantity = this.formatInputQty(line.quantity ?? '1');
+            line.discount_amount = this.formatInputMoney(line.discount_amount ?? '0');
         },
 
         adjustLineQty(index, delta) {

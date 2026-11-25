@@ -85,6 +85,7 @@ class Kernel extends HttpKernel
         'password.confirm' => RequirePassword::class,
         'precognitive' => HandlePrecognitiveRequests::class,
         'signed' => ValidateSignature::class,
+        'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         'store.context' => \App\Http\Middleware\EnsureStoreContext::class,
         'onboarding.completed' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

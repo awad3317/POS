@@ -424,7 +424,7 @@ test('POS input formatters strip trailing .0000/.000 across cart, Yemeni payment
     app.$nextTick = (fn) => fn && fn();
     app.$refs = {};
     app.activeShift = { client_uuid: generateUuidV7(), expected_cash: '50000.0000', status: 'open' };
-    app.products = sampleCatalog.products;
+    app.products = [...sampleCatalog.products];
     app.unitsByProductId = new Map();
     app.variantsByProductId = new Map();
 
@@ -446,10 +446,40 @@ test('POS input formatters strip trailing .0000/.000 across cart, Yemeni payment
     assert.equal(app.orderDiscountAmount, '0');
     assert.equal(app.orderDiscount, '0');
 
+    // Scanning the same item or clicking +/- or recalculating NEVER overwrites inputs with .000 / .0000
+    app.products.push({
+        id: 101,
+        type: 'simple',
+        name: 'أرز بسمتي 10 كجم',
+        barcode: '6280000000101',
+        sale_price: '13325.0000',
+        purchase_price: '11000.0000',
+        tax_rate: '0.00',
+        is_active: true,
+    });
+    app.addScannedItem('6280000000101');
+    assert.equal(app.cart[0].quantity, '2');
+    assert.equal(app.cart[0].discount_amount, '0');
+
+    app.adjustLineQty(0, 1);
+    assert.equal(app.cart[0].quantity, '3');
+    app.adjustLineQty(0, -2);
+    assert.equal(app.cart[0].quantity, '1');
+
+    // Scale barcode (2.500 kg -> '2.5') also formats cleanly without trailing zero
+    app.addScannedItem('2010025025008');
+    assert.equal(app.cart.length, 2);
+    assert.equal(app.cart[1].quantity, '2.5');
+    assert.equal(app.cart[1].discount_amount, '0');
+    app.cart.pop();
+
     // Internal Decimal.js precision remains 4 decimals / 3 decimals
     assert.equal(app.cartComputation.totalAmount, '13325.0000');
     assert.equal(app.cartComputation.lines[0].quantity, '1.000');
     assert.equal(app.cartComputation.lines[0].discountAmount, '0.0000');
+    // Recalculating cartComputation does not mutate cart input strings
+    assert.equal(app.cart[0].quantity, '1');
+    assert.equal(app.cart[0].discount_amount, '0');
 
     // 2. Yemeni Payment Modal & Quick Banknotes & Exact Cash & Split Payments
     app.openPaymentModal();

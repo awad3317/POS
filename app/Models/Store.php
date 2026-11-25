@@ -11,6 +11,8 @@ class Store extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const SUBSCRIPTION_BLOCKED_MESSAGE = 'انتهى اشتراك المتجر أو تم إيقافه، يرجى التواصل مع الإدارة لتجديد الاشتراك.';
+
     protected $fillable = [
         'name',
         'slug',
@@ -98,5 +100,34 @@ class Store extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function isSubscriptionBlocked(): bool
+    {
+        if ($this->subscription_status === 'suspended') {
+            return true;
+        }
+
+        if ($this->subscription_ends_at !== null && $this->subscription_ends_at->isPast()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isSubscriptionExpired(): bool
+    {
+        return $this->subscription_ends_at !== null && $this->subscription_ends_at->isPast();
+    }
+
+    public function businessTypeLabel(): string
+    {
+        return match ($this->business_type) {
+            'grocery' => 'بقالة',
+            'clothing' => 'ملابس',
+            'perfumes' => 'عطور',
+            'general' => 'تجزئة',
+            default => $this->business_type ?? 'تجزئة',
+        };
     }
 }

@@ -40,8 +40,18 @@ class AuthController extends Controller
             return back()->withErrors(['login' => 'بيانات الدخول غير صحيحة.'])->withInput($request->only('login'));
         }
 
-        if (! $user->is_active || ! $user->store || $user->store->subscription_status === 'suspended') {
-            return back()->withErrors(['login' => 'هذا الحساب أو المتجر غير نشط حالياً.'])->withInput($request->only('login'));
+        if (! $user->is_active) {
+            return back()->withErrors(['login' => 'هذا الحساب غير نشط حالياً.'])->withInput($request->only('login'));
+        }
+
+        if (! $user->hasRole('super_admin')) {
+            if (! $user->store) {
+                return back()->withErrors(['login' => 'هذا الحساب غير مرتبط بأي متجر نشط.'])->withInput($request->only('login'));
+            }
+
+            if ($user->store->isSubscriptionBlocked()) {
+                return back()->withErrors(['login' => \App\Models\Store::SUBSCRIPTION_BLOCKED_MESSAGE])->withInput($request->only('login'));
+            }
         }
 
         Auth::login($user, $request->boolean('remember'));
@@ -62,6 +72,10 @@ class AuthController extends Controller
     protected function redirectAuthenticatedUser(User $user): RedirectResponse
     {
         $user->loadMissing(['store', 'roles']);
+
+        if ($user->hasRole('super_admin')) {
+            return redirect()->route('super-admin.index');
+        }
 
         if ($user->store && $user->store->onboarding_completed_at === null) {
             return redirect()->route('onboarding.show');

@@ -43,8 +43,8 @@ class TerminalAuthController extends Controller
         }
 
         $store = Store::query()->find($user->store_id);
-        if (! $store || $store->subscription_status === 'suspended') {
-            return response()->json(['message' => 'حساب المتجر موقوف حالياً.'], 403);
+        if (! $store || $store->isSubscriptionBlocked()) {
+            return response()->json(['message' => Store::SUBSCRIPTION_BLOCKED_MESSAGE], 403);
         }
 
         $terminal = Terminal::withoutStoreScope()
