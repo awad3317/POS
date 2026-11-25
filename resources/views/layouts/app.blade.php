@@ -159,13 +159,13 @@
                     <span x-show="!sidebarCollapsed" class="truncate">الفواتير والمرتجعات</span>
                 </a>
 
-                <a href="{{ route('shifts.index') }}" title="الورديات والصندوق"
+                <a href="{{ route('shifts.index') }}" title=" جلسات البيع والصندوق"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('shifts.*') ? $navActive : $navIdle }}">
                     <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('shifts.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span x-show="!sidebarCollapsed" class="truncate">الورديات والصندوق</span>
+                    <span x-show="!sidebarCollapsed" class="truncate"> جلسات البيع والصندوق</span>
                 </a>
             </div>
 

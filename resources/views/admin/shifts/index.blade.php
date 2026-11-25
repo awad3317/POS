@@ -1,17 +1,17 @@
 @extends('layouts.app')
-@section('title', 'الورديات والصندوق')
-@section('header', 'إدارة الورديات وتقارير الصندوق (Z-Report)')
-@section('breadcrumb', 'الرئيسية / الورديات والصندوق')
+@section('title', 'جلسات البيع والصندوق')
+@section('header', 'إدارة جلسات البيع وتقارير الصندوق ')
+@section('breadcrumb', 'الرئيسية / جلسات البيع والصندوق')
 
 @section('content')
 @php $sym =$store->currency_symbol; @endphp
 
 <div class="space-y-6">
 
-    {{-- فتح وردية جديدة --}}
+    {{-- فتح جلسة بيع جديدة --}}
     <section class="rounded-2xl border border-gray-200 bg-white shadow-xs">
         <div class="border-b border-gray-100 px-5 py-4 sm:px-6">
-            <h2 class="text-sm font-bold text-gray-900 sm:text-base">فتح وردية جديدة</h2>
+            <h2 class="text-sm font-bold text-gray-900 sm:text-base">فتح جلسة بيع جديدة</h2>
             <p class="mt-0.5 text-xs text-gray-500">اختر جهاز الكاشير وأدخل عهدة بداية الوردية</p>
         </div>
 
@@ -29,7 +29,7 @@
                 </div>
 
                 <div class="sm:col-span-4">
-                    <label class="mb-1.5 block text-xs font-semibold text-gray-700">عهدة بداية الوردية ({{ $sym }})</label>
+                    <label class="mb-1.5 block text-xs font-semibold text-gray-700">عهدة بداية جلسة البيع ({{ $sym }})</label>
                     <input type="number" step="any" name="opening_cash" value="0" required
                            class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-xs font-semibold text-gray-900 tabular-nums focus:border-emerald-500 focus:outline-none">
                 </div>
@@ -40,17 +40,17 @@
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                         </svg>
-                        <span>فتح وردية جديدة</span>
+                        <span>فتح جلسة بيع جديدة</span>
                     </button>
                 </div>
             </div>
         </form>
     </section>
 
-    {{-- سجل الورديات --}}
+    {{-- سجل جلسات البيع--}}
     <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs">
         <div class="border-b border-gray-100 px-5 py-4 sm:px-6">
-            <h2 class="text-sm font-bold text-gray-900 sm:text-base">سجل الورديات وجرد الصناديق</h2>
+            <h2 class="text-sm font-bold text-gray-900 sm:text-base">سجل جلسات البيع وجرد الصناديق</h2>
         </div>
 
         <div class="overflow-x-auto">
@@ -63,7 +63,7 @@
                         <th class="whitespace-nowrap px-5 py-3.5">النقد المتوقع</th>
                         <th class="whitespace-nowrap px-5 py-3.5">الجرد الفعلي</th>
                         <th class="whitespace-nowrap px-5 py-3.5">الفارق</th>
-                        <th class="whitespace-nowrap px-5 py-3.5 text-left">تفاصيل Z-Report</th>
+                        <th class="whitespace-nowrap px-5 py-3.5 text-left"> تقرير جلسات البيع</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">

@@ -227,12 +227,12 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block font-semibold text-slate-700">رصيد افتتاحي مستحق للمورد</label>
+                    <label class="block font-semibold text-slate-700">دين سابق مستحق للمورد</label>
                     <input type="number"
                            step="any"
                            name="opening_balance"
                            value="0"
-                           placeholder="رصيد افتتاحي مستحق للمورد"
+                           placeholder="دين سابق مستحق للمورد"
                            class="w-full rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5 text-xs font-semibold text-slate-900 tabular-nums placeholder:text-gray-400 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 focus:outline-none transition-colors">
                 </div>
             </div>

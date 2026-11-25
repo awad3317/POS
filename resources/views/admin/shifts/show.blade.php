@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', 'تقرير الوردية Z-Report')
-@section('header', 'تقرير جرد الوردية #' . $shift->id)
-@section('breadcrumb', 'الرئيسية / الورديات والصندوق / وردية #' . $shift->id)
+@section('title', 'تقرير جلسة البيع ')
+@section('header', 'تقرير جرد جلسة البيع #' . $shift->id)
+@section('breadcrumb', 'الرئيسية / جلسات البيع والصندوق / جلسة بيع #' . $shift->id)
 
 @section('content')
 @php $sym = $store->currency_symbol; @endphp
@@ -14,7 +14,7 @@
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
-            <span>العودة لسجل الورديات</span>
+            <span>العودة لسجل جلسات البيع</span>
         </a>
 
         <button type="button" onclick="window.print()"
@@ -92,7 +92,7 @@
             @if ($shift->status === 'open')
                 <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs">
                     <div class="border-b border-gray-100 px-5 py-4">
-                        <h3 class="text-sm font-bold text-gray-900">إغلاق الوردية وجرد النقد</h3>
+                        <h3 class="text-sm font-bold text-gray-900">إغلاق جلسة البيع وجرد النقد</h3>
                     </div>
 
                     <form method="POST" action="{{ route('shifts.close', $shift->id) }}" class="space-y-4 p-5 text-xs">
@@ -111,7 +111,7 @@
 
                         <button type="submit"
                                 class="h-10 w-full rounded-lg bg-slate-900 text-xs font-bold text-white shadow-xs transition hover:bg-slate-800">
-                            إغلاق الوردية واعتماد الجرد
+                            إغلاق جلسة البيع واعتماد الجرد
                         </button>
                     </form>
                 </section>
