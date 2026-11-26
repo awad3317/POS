@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tayar-plus-v3';
+const CACHE_NAME = 'tayar-plus-v4';
 const STATIC_CACHE = `${CACHE_NAME}-static`;
 const PAGE_CACHE = `${CACHE_NAME}-pages`;
 
@@ -21,10 +21,13 @@ function isNetworkOnlyPath(pathname) {
 
 function isStaticAssetPath(pathname) {
     return pathname.startsWith('/build/')
-        || pathname.startsWith('/fonts/')
+        || pathname.startsWith('/fonts/');
+}
+
+function isRevalidatedPwaAsset(pathname) {
+    return pathname === '/manifest.json'
         || pathname.startsWith('/icons/')
-        || pathname.startsWith('/img/')
-        || pathname === '/manifest.json';
+        || pathname.startsWith('/img/');
 }
 
 function isHtmlNavigationRequest(request, pathname) {
@@ -100,7 +103,28 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 2. Cache-First: Immutable hashed static assets (/build/*, /fonts/*, icons, manifest)
+    // 2. Network-First (bypassing stale HTTP disk cache, with offline fallback): manifest.json, icons & brand images
+    if (isRevalidatedPwaAsset(url.pathname)) {
+        event.respondWith((async () => {
+            const cache = await caches.open(STATIC_CACHE);
+            try {
+                const networkRes = await fetch(request, { cache: 'no-cache' });
+                if (networkRes && networkRes.ok && networkRes.type === 'basic') {
+                    cache.put(request, networkRes.clone());
+                }
+                return networkRes;
+            } catch {
+                const cached = await cache.match(request, { ignoreSearch: true });
+                if (cached) {
+                    return cached;
+                }
+                throw new Error('Offline and asset not cached');
+            }
+        })());
+        return;
+    }
+
+    // 3. Cache-First: Immutable hashed static assets (/build/*, /fonts/*)
     if (isStaticAssetPath(url.pathname)) {
         event.respondWith((async () => {
             const cache = await caches.open(STATIC_CACHE);
