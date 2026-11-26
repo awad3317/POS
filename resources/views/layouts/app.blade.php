@@ -137,24 +137,24 @@
                 نظرة عامة والمبيعات
             </div>
             <div class="space-y-1">
-                <a href="{{ route('dashboard') }}" title="الرئيسية"
+                {{-- <a href="{{ route('dashboard') }}" title="الرئيسية"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('dashboard') ? $navActive : $navIdle }}">
                     <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-3a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="truncate">الرئيسية</span>
-                </a>
+                </a> --}}
 
                 @can('reports.view_profit')
-                <a href="{{ route('owner.dashboard') }}" title="لوحة المالك السريعة"
+                {{-- <a href="{{ route('owner.dashboard') }}" title="لوحة المالك السريعة"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('owner.dashboard') ? $navActive : $navIdle }}">
                     <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('owner.dashboard') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="truncate">لوحة المالك السريعة</span>
-                </a>
+                </a> --}}
                 @endcan
 
                 <a href="{{ route('orders.index') }}" title="الفواتير والمرتجعات"
@@ -166,14 +166,14 @@
                     <span x-show="!sidebarCollapsed" class="truncate">الفواتير والمرتجعات</span>
                 </a>
 
-                <a href="{{ route('shifts.index') }}" title=" جلسات البيع والصندوق"
+                {{-- <a href="{{ route('shifts.index') }}" title=" جلسات البيع والصندوق"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('shifts.*') ? $navActive : $navIdle }}">
                     <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('shifts.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="truncate"> جلسات البيع والصندوق</span>
-                </a>
+                </a> --}}
             </div>
 
             {{-- Group 2: Inventory & Products --}}
@@ -208,14 +208,14 @@
                     <span x-show="!sidebarCollapsed" class="truncate">طباعة ملصقات الباركود</span>
                 </a>
 
-                <a href="{{ route('stocktake.index') }}" title="الجرد وكرت الصنف"
+                {{-- <a href="{{ route('stocktake.index') }}" title="الجرد وكرت الصنف"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('stocktake.*', 'products.stock-card') ? $navActive : $navIdle }}">
                     <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('stocktake.*', 'products.stock-card') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="truncate">الجرد وكرت الصنف</span>
-                </a>
+                </a> --}}
             </div>
             @endcan
 
@@ -264,7 +264,7 @@
                     <span x-show="!sidebarCollapsed" class="truncate">العمال والرواتب والسلف</span>
                 </a>
                 @endcan
-
+{{-- 
                 <a href="{{ route('expenses.index') }}" title="المصروفات اليومية"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('expenses.*') ? $navActive : $navIdle }}">
@@ -272,7 +272,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="truncate">المصروفات اليومية</span>
-                </a>
+                </a> --}}
             </div>
 
             {{-- Group 4: Reports & System --}}
@@ -283,14 +283,14 @@
             <div x-show="sidebarCollapsed" style="display: none;" class="my-2.5 border-t border-gray-100"></div>
             <div class="space-y-1">
                 @can('reports.view_profit')
-                <a href="{{ route('reports.index') }}" title="التقارير وصافي الربح"
+                {{-- <a href="{{ route('reports.index') }}" title="التقارير وصافي الربح"
                    :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''"
                    class="{{ $navBase }} {{ request()->routeIs('reports.*') ? $navActive : $navIdle }}">
                     <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('reports.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                     <span x-show="!sidebarCollapsed" class="truncate">التقارير وصافي الربح</span>
-                </a>
+                </a> --}}
                 @endcan
 
                 @can('settings.manage')
