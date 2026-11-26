@@ -6,8 +6,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#059669">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="{{ asset('icons/icon-192.png') }}?v=2">
-    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}?v=2">
+    <link rel="icon" type="image/png" href="/icons/tayar-icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/tayar-icon-192.png">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration('/sw.js').then(function (reg) {
+                if (reg) reg.update().catch(function () {});
+            }).catch(function () {});
+        }
+    </script>
     <title>@yield('title', 'لوحة الإدارة') — {{ auth()->user()?->store?->name ?? 'تيار بلس' }}</title>
     @hasSection('vite_entry')
         @yield('vite_entry')

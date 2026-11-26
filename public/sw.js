@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tayar-plus-v4';
+const CACHE_NAME = 'tayar-plus-v5';
 const STATIC_CACHE = `${CACHE_NAME}-static`;
 const PAGE_CACHE = `${CACHE_NAME}-pages`;
 
@@ -8,8 +8,8 @@ const PRECACHE_URLS = [
     '/fonts/ibm-plex-sans-arabic-500.woff2',
     '/fonts/ibm-plex-sans-arabic-600.woff2',
     '/fonts/ibm-plex-sans-arabic-700.woff2',
-    '/icons/icon-192.png',
-    '/icons/icon-512.png',
+    '/icons/tayar-icon-192.png',
+    '/icons/tayar-icon-512.png',
     '/img/tayar-plus-logo.png',
 ];
 

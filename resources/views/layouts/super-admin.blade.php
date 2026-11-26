@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#059669">
-    <link rel="icon" type="image/png" href="{{ asset('icons/icon-192.png') }}?v=2">
-    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}?v=2">
+    <link rel="icon" type="image/png" href="/icons/tayar-icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/tayar-icon-192.png">
     <title>@yield('title', 'إدارة المنصة والاشتراكات') — تيار بلس</title>
     @hasSection('vite_entry')
         @yield('vite_entry')
